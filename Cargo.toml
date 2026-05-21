@@ -1,0 +1,19 @@
+[package]
+name = "sec-api-sdk-rust"
+version = "0.3.0"
+edition = "2021"
+description = "Bootstrap Rust client for SEC API"
+license = "MIT"
+readme = "README.md"
+homepage = "https://secapi.ai/developers"
+documentation = "https://docs.secapi.ai"
+repository = "https://github.com/secapi-ai/secapi-rust"
+keywords = ["sec", "edgar", "financial-data", "sdk"]
+
+[dependencies]
+reqwest = { version = "0.13", features = ["json", "query", "rustls"] }
+serde_json = "1"
+urlencoding = "2"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
