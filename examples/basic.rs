@@ -1,4 +1,4 @@
-use sec_api_sdk_rust::SecApiClient;
+use sec_api_sdk_rust::{LatestFilingRequest, LatestSectionRequest, ResolveEntityRequest, SecApiClient};
 
 #[tokio::main]
 async fn main() {
@@ -8,10 +8,16 @@ async fn main() {
         std::env::var("SECAPI_BASE_URL")
             .unwrap_or_else(|_| "http://localhost:8787".to_string()),
     );
-    let entity = client.resolve_entity(&[("ticker", "AAPL")]).await.unwrap();
-    let filing = client.latest_filing(&[("ticker", "AAPL"), ("form", "10-K")]).await.unwrap();
+    let entity = client
+        .resolve_entity_with(&ResolveEntityRequest::new().ticker("AAPL"))
+        .await
+        .unwrap();
+    let filing = client
+        .latest_filing_with(&LatestFilingRequest::new().ticker("AAPL").form("10-K"))
+        .await
+        .unwrap();
     let section = client
-        .latest_section("item_1a", &[("ticker", "AAPL"), ("form", "10-K"), ("mode", "compact")])
+        .latest_section_with(&LatestSectionRequest::new("item_1a").ticker("AAPL").form("10-K").mode("compact"))
         .await
         .unwrap();
 
