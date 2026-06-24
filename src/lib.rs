@@ -1213,6 +1213,10 @@ impl SecApiClient {
         self.post_json("/mcp", &mcp_tool_call_body(tool_name, arguments, id)).await
     }
 
+    pub async fn request_diagnostics(&self, request_id: &str) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/diagnostics/requests/{}", urlencoding::encode(request_id)), &[]).await
+    }
+
     pub async fn delete_api_key(&self, key_id: &str) -> Result<(), SecApiError> {
         let url = format!(
             "{}/v1/api_keys/{}",
@@ -1903,6 +1907,30 @@ mod tests {
         assert!(raw_request.contains(want_user_agent.as_str()));
         assert!(raw_request.contains("content-type: application/json"));
         assert!(raw_request.contains("secapi-version: 2026-03-19"));
+    }
+
+    #[tokio::test]
+    async fn request_diagnostics_escapes_request_id() {
+        let response = concat!(
+            "HTTP/1.1 200 OK\r\n",
+            "content-type: application/json\r\n",
+            "content-length: 11\r\n",
+            "connection: close\r\n",
+            "\r\n",
+            "{\"ok\":true}"
+        );
+        let (base_url, rx, handle) = raw_capture_server(response);
+        let client = SecApiClient::new(None)
+            .with_base_url(base_url)
+            .without_retries();
+
+        let payload = client.request_diagnostics("req/with space").await.unwrap();
+
+        let raw_request = rx.recv_timeout(Duration::from_secs(2)).expect("raw request");
+        handle.join().expect("raw capture server thread");
+
+        assert_eq!(payload["ok"], json!(true));
+        assert!(raw_request.contains("GET /v1/diagnostics/requests/req%2Fwith%20space HTTP/1.1"));
     }
 
     #[tokio::test]
