@@ -977,6 +977,10 @@ impl SecApiClient {
         self.get("/v1/news/stories", params).await
     }
 
+    pub async fn macro_search(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/macro/search", params).await
+    }
+
     pub async fn macro_indicators(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/macro/indicators", params).await
     }
@@ -999,6 +1003,14 @@ impl SecApiClient {
 
     pub async fn macro_regimes(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/macro/regimes", params).await
+    }
+
+    pub async fn macro_credit_ratings(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/macro/credit-ratings", params).await
+    }
+
+    pub async fn macro_credit_rating(&self, country: &str) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/macro/credit-ratings/{}", urlencoding::encode(country)), &[]).await
     }
 
     pub async fn factor_catalog(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
