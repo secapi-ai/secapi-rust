@@ -1013,10 +1013,6 @@ impl SecApiClient {
         self.get(&format!("/v1/macro/credit-ratings/{}", urlencoding::encode(country)), &[]).await
     }
 
-    pub async fn macro_status(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
-        self.get("/v1/macro/status", params).await
-    }
-
     pub async fn factor_catalog(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/factors/catalog", params).await
     }
@@ -1112,10 +1108,6 @@ impl SecApiClient {
         self.post_json_with_params("/v1/factors/custom", body, params).await
     }
 
-    pub async fn factor_macro_sensitivity(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
-        self.get("/v1/factors/macro-sensitivity", params).await
-    }
-
     pub async fn stock_loadings(&self, ticker: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get(&format!("/v1/stocks/{}/loadings", urlencoding::encode(ticker)), params).await
     }
@@ -1172,10 +1164,6 @@ impl SecApiClient {
         self.post_json_with_params("/v1/portfolio/stress-test", body, params).await
     }
 
-    pub async fn portfolio_stress_scenarios(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
-        self.get("/v1/portfolio/stress-test/scenarios", params).await
-    }
-
     pub async fn intelligence_security(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/intelligence/security", params).await
     }
@@ -1184,16 +1172,8 @@ impl SecApiClient {
         self.get("/v1/intelligence/company", params).await
     }
 
-    pub async fn request_diagnostics(&self, request_id: &str) -> Result<Value, SecApiError> {
-        self.get(&format!("/v1/diagnostics/requests/{}", urlencoding::encode(request_id)), &[]).await
-    }
-
     pub async fn intelligence_country_report(&self, body: &Value) -> Result<Value, SecApiError> {
         self.post_json("/v1/intelligence/country-report", body).await
-    }
-
-    pub async fn macro_investment_briefing(&self, body: &Value, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
-        self.post_json_with_params("/v1/intelligence/country-report", body, params).await
     }
 
     pub async fn intelligence_portfolio(&self, body: &Value) -> Result<Value, SecApiError> {
@@ -1231,6 +1211,10 @@ impl SecApiClient {
         id: Option<&str>,
     ) -> Result<Value, SecApiError> {
         self.post_json("/mcp", &mcp_tool_call_body(tool_name, arguments, id)).await
+    }
+
+    pub async fn request_diagnostics(&self, request_id: &str) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/diagnostics/requests/{}", urlencoding::encode(request_id)), &[]).await
     }
 
     pub async fn delete_api_key(&self, key_id: &str) -> Result<(), SecApiError> {
@@ -1923,6 +1907,30 @@ mod tests {
         assert!(raw_request.contains(want_user_agent.as_str()));
         assert!(raw_request.contains("content-type: application/json"));
         assert!(raw_request.contains("secapi-version: 2026-03-19"));
+    }
+
+    #[tokio::test]
+    async fn request_diagnostics_escapes_request_id() {
+        let response = concat!(
+            "HTTP/1.1 200 OK\r\n",
+            "content-type: application/json\r\n",
+            "content-length: 11\r\n",
+            "connection: close\r\n",
+            "\r\n",
+            "{\"ok\":true}"
+        );
+        let (base_url, rx, handle) = raw_capture_server(response);
+        let client = SecApiClient::new(None)
+            .with_base_url(base_url)
+            .without_retries();
+
+        let payload = client.request_diagnostics("req/with space").await.unwrap();
+
+        let raw_request = rx.recv_timeout(Duration::from_secs(2)).expect("raw request");
+        handle.join().expect("raw capture server thread");
+
+        assert_eq!(payload["ok"], json!(true));
+        assert!(raw_request.contains("GET /v1/diagnostics/requests/req%2Fwith%20space HTTP/1.1"));
     }
 
     #[tokio::test]
