@@ -742,10 +742,18 @@ impl SecApiClient {
         FactorService { client: self }
     }
 
+    pub fn situations(&self) -> SituationService<'_> {
+        SituationService { client: self }
+    }
+
     fn headers(&self) -> Result<HeaderMap, SecApiError> {
+        self.headers_with_accept(HeaderValue::from_static("application/json"))
+    }
+
+    fn headers_with_accept(&self, accept: HeaderValue) -> Result<HeaderMap, SecApiError> {
         let mut headers = HeaderMap::new();
         headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
-        headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
+        headers.insert(ACCEPT, accept);
         headers.insert(USER_AGENT, HeaderValue::from_static(SDK_USER_AGENT));
         let version_header = HeaderValue::from_str(&self.api_version).unwrap_or_else(|_| {
             HeaderValue::from_static(DEFAULT_API_VERSION)
@@ -786,6 +794,44 @@ impl SecApiClient {
                     let text = response.text().await?;
                     if (200..300).contains(&status) {
                         return serde_json::from_str(&text).map_err(SecApiError::JsonDecode);
+                    }
+                    return Err(api_error(status, text, request_id));
+                }
+                Err(error) => {
+                    if attempt < self.retry_config.max_retries {
+                        tokio::time::sleep(retry_delay(attempt, self.retry_config, None)).await;
+                        continue;
+                    }
+                    return Err(error.into());
+                }
+            }
+        }
+        unreachable!("retry loop always returns")
+    }
+
+    async fn get_text(&self, path: &str, params: &[(&str, &str)], accept: HeaderValue) -> Result<String, SecApiError> {
+        let url = format!("{}{}", self.base_url.trim_end_matches('/'), path);
+        for attempt in 0..=self.retry_config.max_retries {
+            let response = self
+                .http
+                .get(&url)
+                .headers(self.headers_with_accept(accept.clone())?)
+                .query(params)
+                .send()
+                .await;
+            match response {
+                Ok(response) => {
+                    let status = response.status().as_u16();
+                    if is_retryable_status(status) && attempt < self.retry_config.max_retries {
+                        let retry_after = response.headers().get(RETRY_AFTER).cloned();
+                        drop(response);
+                        tokio::time::sleep(retry_delay(attempt, self.retry_config, retry_after.as_ref())).await;
+                        continue;
+                    }
+                    let request_id = response_request_id(response.headers());
+                    let text = response.text().await?;
+                    if (200..300).contains(&status) {
+                        return Ok(text);
                     }
                     return Err(api_error(status, text, request_id));
                 }
@@ -1352,6 +1398,82 @@ impl SecApiClient {
         self.get("/v1/earnings/transcripts", params).await
     }
 
+    /// List durable, customer-facing SEC Special Situations.
+    pub async fn list_situations(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/situations", params).await
+    }
+
+    /// List immutable weekly Special Situations Digest archive issues.
+    ///
+    /// This endpoint is introduced by datastream PR #1363 and requires that PR
+    /// to be merged and deployed before production calls will succeed.
+    pub async fn situation_issues(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/situations/issues", params).await
+    }
+
+    /// Retrieve one weekly Special Situations Digest issue by issue number or slug.
+    ///
+    /// This endpoint is introduced by datastream PR #1363 and requires that PR
+    /// to be merged and deployed before production calls will succeed.
+    pub async fn situation_issue(&self, issue: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/situations/issues/{}", urlencoding::encode(issue)), params).await
+    }
+
+    pub async fn get_situation(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/situations/{}", urlencoding::encode(situation_id)), params).await
+    }
+
+    pub async fn situation_filings(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(
+            &format!("/v1/situations/{}/filings", urlencoding::encode(situation_id)),
+            params,
+        ).await
+    }
+
+    pub async fn situation_summary(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(
+            &format!("/v1/situations/{}/summary", urlencoding::encode(situation_id)),
+            params,
+        ).await
+    }
+
+    /// Return the Copy-for-LLM markdown export for one Special Situation.
+    pub async fn situation_export_markdown(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<String, SecApiError> {
+        self.get_text(
+            &format!("/v1/situations/{}/export", urlencoding::encode(situation_id)),
+            params,
+            HeaderValue::from_static("text/markdown"),
+        ).await
+    }
+
+    /// Alias for [`SecApiClient::situation_export_markdown`].
+    pub async fn situation_copy_for_llm(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<String, SecApiError> {
+        self.situation_export_markdown(situation_id, params).await
+    }
+
+    pub async fn situations_feed(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/situations/feed", params).await
+    }
+
+    pub async fn situations_calendar(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/situations/calendar", params).await
+    }
+
+    pub async fn situations_stats(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/situations/stats", params).await
+    }
+
+    pub async fn situations_performance(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/situations/performance", params).await
+    }
+
+    pub async fn situations_by_form(&self, form: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(
+            &format!("/v1/situations/by-form/{}", urlencoding::encode(form)),
+            params,
+        ).await
+    }
+
     async fn post_json(&self, path: &str, body: &Value) -> Result<Value, SecApiError> {
         self.post_json_with_params(path, body, &[]).await
     }
@@ -1590,6 +1712,61 @@ impl<'a> FactorService<'a> {
 
     pub async fn custom_with_params(self, body: &Value, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.client.factor_custom_with_params(body, params).await
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct SituationService<'a> {
+    client: &'a SecApiClient,
+}
+
+impl<'a> SituationService<'a> {
+    pub async fn list(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.list_situations(params).await
+    }
+
+    pub async fn issues(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situation_issues(params).await
+    }
+
+    pub async fn issue(self, issue: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situation_issue(issue, params).await
+    }
+
+    pub async fn get(self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.get_situation(situation_id, params).await
+    }
+
+    pub async fn filings(self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situation_filings(situation_id, params).await
+    }
+
+    pub async fn summary(self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situation_summary(situation_id, params).await
+    }
+
+    pub async fn copy_for_llm(self, situation_id: &str, params: &[(&str, &str)]) -> Result<String, SecApiError> {
+        self.client.situation_copy_for_llm(situation_id, params).await
+    }
+
+    pub async fn feed(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situations_feed(params).await
+    }
+
+    pub async fn calendar(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situations_calendar(params).await
+    }
+
+    pub async fn stats(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situations_stats(params).await
+    }
+
+    pub async fn performance(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situations_performance(params).await
+    }
+
+    pub async fn by_form(self, form: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situations_by_form(form, params).await
     }
 }
 
@@ -2493,6 +2670,109 @@ mod tests {
             targets[5],
             "/v1/factors/dashboard?country=US&category=style&ticker=AAPL&response_mode=compact"
         );
+    }
+
+    #[tokio::test]
+    async fn situations_service_delegates_to_public_special_situations_routes() {
+        let (base_url, rx, handle) = capture_server(11);
+        let client = SecApiClient::new(None).with_base_url(base_url);
+
+        client
+            .situations()
+            .list(&[("types", "ma,tender_offer"), ("limit", "10"), ("response_mode", "agent")])
+            .await
+            .unwrap();
+        client.situations().issues(&[("limit", "12")]).await.unwrap();
+        client
+            .situations()
+            .issue("special-situations-digest/22 2026-07-05", &[])
+            .await
+            .unwrap();
+        client
+            .situations()
+            .get("sit/team alpha", &[("enrich", "false")])
+            .await
+            .unwrap();
+        client
+            .situations()
+            .filings("sit/team alpha", &[("cursor", "10"), ("limit", "5")])
+            .await
+            .unwrap();
+        client
+            .situations()
+            .summary("sit/team alpha", &[("view", "agent")])
+            .await
+            .unwrap();
+        client
+            .situations()
+            .feed(&[("types", "ma"), ("since", "2026-07-01"), ("limit", "3")])
+            .await
+            .unwrap();
+        client
+            .situations()
+            .calendar(&[("date_types", "vote,expiry"), ("days", "30")])
+            .await
+            .unwrap();
+        client.situations().stats(&[("window", "30d")]).await.unwrap();
+        client
+            .situations()
+            .performance(&[("types", "ma"), ("group_by", "subtype")])
+            .await
+            .unwrap();
+        client
+            .situations()
+            .by_form("SC TO-T/DEFM14A", &[("tickers", "AAPL,MSFT"), ("enrich", "false")])
+            .await
+            .unwrap();
+
+        let targets: Vec<String> = (0..11)
+            .map(|_| rx.recv_timeout(Duration::from_secs(2)).expect("request target"))
+            .collect();
+        handle.join().expect("capture server thread");
+
+        assert_eq!(
+            targets,
+            vec![
+                "/v1/situations?types=ma%2Ctender_offer&limit=10&response_mode=agent",
+                "/v1/situations/issues?limit=12",
+                "/v1/situations/issues/special-situations-digest%2F22%202026-07-05",
+                "/v1/situations/sit%2Fteam%20alpha?enrich=false",
+                "/v1/situations/sit%2Fteam%20alpha/filings?cursor=10&limit=5",
+                "/v1/situations/sit%2Fteam%20alpha/summary?view=agent",
+                "/v1/situations/feed?types=ma&since=2026-07-01&limit=3",
+                "/v1/situations/calendar?date_types=vote%2Cexpiry&days=30",
+                "/v1/situations/stats?window=30d",
+                "/v1/situations/performance?types=ma&group_by=subtype",
+                "/v1/situations/by-form/SC%20TO-T%2FDEFM14A?tickers=AAPL%2CMSFT&enrich=false",
+            ]
+        );
+    }
+
+    #[tokio::test]
+    async fn situation_copy_for_llm_returns_raw_markdown_text() {
+        let body = "# Situation\n\n- Source filing: 8-K";
+        let response = format!(
+            "HTTP/1.1 200 OK\r\ncontent-type: text/markdown; charset=utf-8\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{}",
+            body.len(),
+            body
+        );
+        let (base_url, rx, handle) = raw_response_sequence_server(vec![response]);
+        let client = SecApiClient::new(None)
+            .with_base_url(base_url)
+            .without_retries();
+
+        let markdown = client
+            .situations()
+            .copy_for_llm("sit/team alpha", &[("format", "markdown")])
+            .await
+            .unwrap();
+
+        let raw_request = rx.recv_timeout(Duration::from_secs(2)).expect("raw request");
+        handle.join().expect("raw capture server thread");
+
+        assert_eq!(markdown, body);
+        assert!(raw_request.starts_with("GET /v1/situations/sit%2Fteam%20alpha/export?format=markdown HTTP/1.1"));
+        assert!(raw_request.contains("accept: text/markdown"));
     }
 
     #[tokio::test]
