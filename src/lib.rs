@@ -1437,6 +1437,17 @@ impl SecApiClient {
         ).await
     }
 
+    /// Return the public SEC-derived underwriting pack JSON for one Special Situation.
+    ///
+    /// This endpoint is introduced by datastream PR #1363 and requires that PR
+    /// to be merged and deployed before production calls will succeed.
+    pub async fn situation_underwriting_pack(&self, situation_id: &str) -> Result<Value, SecApiError> {
+        self.get(
+            &format!("/v1/situations/{}/underwriting-pack", urlencoding::encode(situation_id)),
+            &[],
+        ).await
+    }
+
     /// Return the Copy-for-LLM markdown export for one Special Situation.
     pub async fn situation_export_markdown(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<String, SecApiError> {
         self.get_text(
@@ -1743,6 +1754,10 @@ impl<'a> SituationService<'a> {
 
     pub async fn summary(self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.client.situation_summary(situation_id, params).await
+    }
+
+    pub async fn underwriting_pack(self, situation_id: &str) -> Result<Value, SecApiError> {
+        self.client.situation_underwriting_pack(situation_id).await
     }
 
     pub async fn copy_for_llm(self, situation_id: &str, params: &[(&str, &str)]) -> Result<String, SecApiError> {
@@ -2674,7 +2689,7 @@ mod tests {
 
     #[tokio::test]
     async fn situations_service_delegates_to_public_special_situations_routes() {
-        let (base_url, rx, handle) = capture_server(11);
+        let (base_url, rx, handle) = capture_server(12);
         let client = SecApiClient::new(None).with_base_url(base_url);
 
         client
@@ -2705,6 +2720,11 @@ mod tests {
             .unwrap();
         client
             .situations()
+            .underwriting_pack("sit/team alpha")
+            .await
+            .unwrap();
+        client
+            .situations()
             .feed(&[("types", "ma"), ("since", "2026-07-01"), ("limit", "3")])
             .await
             .unwrap();
@@ -2725,7 +2745,7 @@ mod tests {
             .await
             .unwrap();
 
-        let targets: Vec<String> = (0..11)
+        let targets: Vec<String> = (0..12)
             .map(|_| rx.recv_timeout(Duration::from_secs(2)).expect("request target"))
             .collect();
         handle.join().expect("capture server thread");
@@ -2739,6 +2759,7 @@ mod tests {
                 "/v1/situations/sit%2Fteam%20alpha?enrich=false",
                 "/v1/situations/sit%2Fteam%20alpha/filings?cursor=10&limit=5",
                 "/v1/situations/sit%2Fteam%20alpha/summary?view=agent",
+                "/v1/situations/sit%2Fteam%20alpha/underwriting-pack",
                 "/v1/situations/feed?types=ma&since=2026-07-01&limit=3",
                 "/v1/situations/calendar?date_types=vote%2Cexpiry&days=30",
                 "/v1/situations/stats?window=30d",

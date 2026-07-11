@@ -10,7 +10,7 @@ Bootstrap async Rust client for SEC API factor data, filings, statements, owners
 - factor catalog, returns, history, valuations, exposures, decomposition, pairs, and custom discovery
 - portfolio factor attribution, hedging, optimization, stress testing, and model factor analysis
 - offerings, market calendar, and volatility signal utilities
-- Special Situations list/detail/feed/calendar/stats/performance, Copy-for-LLM markdown exports, and weekly issue archive reads
+- Special Situations list/detail/feed/calendar/stats/performance, underwriting-pack JSON, Copy-for-LLM markdown exports, and weekly issue archive reads
 - MCP info discovery and hosted tool calls
 
 ## Example
@@ -164,13 +164,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let detail = client.situations().get(first_id, &[("enrich", "false")]).await?;
     let filings = client.situations().filings(first_id, &[("limit", "25")]).await?;
     let summary = client.situations().summary(first_id, &[]).await?;
+    let underwriting = client.situations().underwriting_pack(first_id).await?;
     let markdown = client.situations().copy_for_llm(first_id, &[]).await?;
 
     println!(
-        "{} {} {} {}",
+        "{} {} {} {} {}",
         detail["headline"],
         filings["data"].as_array().map_or(0, Vec::len),
         summary["summaryMd"],
+        underwriting["id"],
         markdown
     );
 
@@ -186,7 +188,15 @@ let calendar = client.situations().calendar(&[("days", "90")]).await?;
 let stats = client.situations().stats(&[("window", "30d")]).await?;
 let performance = client.situations().performance(&[("group_by", "subtype")]).await?;
 let by_form = client.situations().by_form("SC TO-T", &[("limit", "10")]).await?;
+let underwriting = client.situations().underwriting_pack("sit_123").await?;
+let flat_underwriting = client.situation_underwriting_pack("sit_123").await?;
 ```
+
+`underwriting_pack(...)` and `situation_underwriting_pack(...)` call
+`GET /v1/situations/{id}/underwriting-pack` with no query parameters and return
+the raw JSON response as `serde_json::Value`. The pack is limited to public
+Special Situations data derived from SEC sources; it does not expose internal or
+TIKR data.
 
 Weekly issue archive helpers are also available:
 
@@ -196,7 +206,9 @@ let issue = client.situations().issue("22", &[]).await?;
 ```
 
 Archive issue endpoints (`GET /v1/situations/issues` and
-`GET /v1/situations/issues/{issue}`) intentionally depend on datastream PR
+`GET /v1/situations/issues/{issue}`) and the underwriting-pack endpoint
+(`GET /v1/situations/{id}/underwriting-pack`) intentionally depend on
+datastream PR
 [#1363](https://github.com/autonomous-computer/omni-datastream/pull/1363).
 Until that PR is merged and deployed to the API origin you call, these helpers
 may return the API's normal not-found or unavailable response even though the
