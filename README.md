@@ -8,7 +8,7 @@ Add the SDK and Tokio runtime to your application's `Cargo.toml`:
 
 ```toml
 [dependencies]
-sec-api-sdk-rust = "1.0.1"
+sec-api-sdk-rust = "1.0.2"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -66,9 +66,9 @@ The client also exposes grouped services through `entities()`, `filings()`, `sec
 
 `SecApiClient::new(Some(api_key))` uses the supplied API key. With `None`, it reads `SECAPI_API_KEY`; `SECAPI_BEARER_TOKEN` supplies an optional bearer token. `OMNI_DATASTREAM_API_KEY` and `OMNI_DATASTREAM_BEARER_TOKEN` remain supported as compatibility fallbacks.
 
-Requests use a 30-second timeout. Safe `GET` requests retry transient network failures and `408`, `429`, `502`, `503`, and `504` responses. Use `with_timeout`, `with_retry_config`, `without_retries`, `with_http_client`, or `with_base_url` when your application needs different transport behavior.
+Requests use a 30-second timeout. Safe `GET` requests retry transient network failures and `408`, `429`, `502`, `503`, and `504` responses. POST helpers do not retry transport or 5xx failures, but they do retry `429` according to the retry configuration. Use `with_timeout`, `with_retry_config`, `without_retries`, `with_http_client`, or `with_base_url` when your application needs different transport behavior.
 
-Every request returns `Result<serde_json::Value, SecApiError>`. For API responses outside the 2xx range, `SecApiError` provides `status()`, `request_id()`, `code()`, `message()`, and `body()`.
+Methods that return an API response body use `Result<serde_json::Value, SecApiError>`; operations such as `delete_api_key` return `Result<(), SecApiError>`. For API responses outside the 2xx range, `SecApiError` provides `status()`, `request_id()`, `code()`, `message()`, and `body()`.
 
 ## Further reading
 
