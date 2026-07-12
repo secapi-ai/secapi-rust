@@ -1,33 +1,41 @@
 # SEC API Rust SDK
 
-`sec-api-sdk-rust` is an async Rust client for SEC API. Use it to retrieve SEC filings and filing sections, company statements and ownership data, factor and portfolio analytics, and hosted MCP tool results.
+`sec-api-sdk-rust` is an asynchronous Rust client for the SEC API. Use it to retrieve SEC filings, filing sections, company data, and other API responses from a Rust application.
 
 ## Install
 
-Add the SDK and Tokio runtime to your application's `Cargo.toml`:
+Add the SDK and a Tokio runtime:
 
-```toml
-[dependencies]
-sec-api-sdk-rust = "1.0.2"
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+```bash
+cargo add sec-api-sdk-rust
+cargo add tokio --features macros,rt-multi-thread
 ```
 
-Set an API key before running your program:
+The Cargo package is `sec-api-sdk-rust`; import it in Rust as `sec_api_sdk_rust`.
+
+## Make a request
+
+Store your API key outside source control and provide it at runtime:
 
 ```bash
 export SECAPI_API_KEY="secapi_live_..."
 ```
 
-## Smallest working example
-
-This program fetches Apple's latest 10-K and prints its filing ID. `SecApiClient::new(None)` reads `SECAPI_API_KEY` and sends requests to `https://api.secapi.ai` by default.
+This example gets the latest Apple 10-K and prints its filing ID:
 
 ```rust
 use sec_api_sdk_rust::SecApiClient;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let client = SecApiClient::new(None);
+    let api_key = std::env::var("SECAPI_API_KEY").map_err(|_| {
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "SECAPI_API_KEY must be set",
+        )
+    })?;
+
+    let client = SecApiClient::new(Some(api_key));
     let filing = client
         .latest_filing(&[("ticker", "AAPL"), ("form", "10-K")])
         .await?;
@@ -37,45 +45,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-## Common workflows
+`latest_filing` sends a request to the API's latest-filings endpoint and returns the JSON response as `serde_json::Value`. SDK methods return `Result<_, SecApiError>`, so request, API, and JSON errors can be handled with Rust's standard error flow.
 
-Use raw query pairs for direct access to API parameters, or typed request builders for entity resolution, latest filings, latest filing sections, and semantic search.
+## Documentation and support
 
-```rust
-use sec_api_sdk_rust::{LatestSectionRequest, ResolveEntityRequest, SecApiClient};
+- [Get started with SEC API](https://docs.secapi.ai/getting-started)
+- [API reference](https://docs.secapi.ai/api-reference)
+- [Libraries and SDKs](https://docs.secapi.ai/libraries-and-sdks)
+- [Email support](mailto:support@secapi.ai)
+- [Report an issue](https://github.com/secapi-ai/secapi-rust/issues)
 
-let client = SecApiClient::new(None);
+## Compatibility and status
 
-let entity = client
-    .resolve_entity_with(&ResolveEntityRequest::new().ticker("AAPL"))
-    .await?;
+The published crate is `1.0.2`, uses the Rust 2021 edition, and runs asynchronously on Tokio. The client reads `SECAPI_API_KEY` when constructed with `SecApiClient::new(None)`; passing the key explicitly, as above, makes the application's credential boundary clear.
 
-let risk_factors = client
-    .latest_section_with(
-        &LatestSectionRequest::new("item_1a")
-            .ticker("AAPL")
-            .form("10-K")
-            .mode("compact"),
-    )
-    .await?;
-```
-
-The client also exposes grouped services through `entities()`, `filings()`, `sections()`, `search()`, and `factors()`. Cursor endpoints support `paginate_entities`, `paginate_filings`, and `paginate_sections`.
-
-## Authentication and configuration
-
-`SecApiClient::new(Some(api_key))` uses the supplied API key. With `None`, it reads `SECAPI_API_KEY`; `SECAPI_BEARER_TOKEN` supplies an optional bearer token. `OMNI_DATASTREAM_API_KEY` and `OMNI_DATASTREAM_BEARER_TOKEN` remain supported as compatibility fallbacks.
-
-Requests use a 30-second timeout. Safe `GET` requests retry transient network failures and `408`, `429`, `502`, `503`, and `504` responses. POST helpers do not retry transport or 5xx failures, but they do retry `429` according to the retry configuration. Use `with_timeout`, `with_retry_config`, `without_retries`, `with_http_client`, or `with_base_url` when your application needs different transport behavior.
-
-Methods that return an API response body use `Result<serde_json::Value, SecApiError>`; operations such as `delete_api_key` return `Result<(), SecApiError>`. For API responses outside the 2xx range, `SecApiError` provides `status()`, `request_id()`, `code()`, `message()`, and `body()`.
-
-## Further reading
-
-- [SEC API documentation](https://docs.secapi.ai)
-- [SEC API developer resources](https://secapi.ai/developers)
-- [Rust API reference](https://docs.rs/sec-api-sdk-rust)
-
-## License
-
-MIT
+MIT licensed.
