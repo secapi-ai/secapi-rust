@@ -2,13 +2,14 @@
 name = "sec-api-sdk-rust"
 version = "1.0.2"
 edition = "2021"
-description = "Async Rust client for SEC API public REST endpoints"
+description = "Async Rust client for SEC API data endpoints"
 license = "MIT"
 readme = "README.md"
 homepage = "https://secapi.ai/developers"
 documentation = "https://docs.secapi.ai"
 repository = "https://github.com/secapi-ai/secapi-rust"
 keywords = ["sec", "edgar", "financial-data", "api-client"]
+categories = ["api-bindings", "asynchronous", "finance"]
 
 [dependencies]
 httpdate = "1"

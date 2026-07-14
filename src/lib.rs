@@ -1,3 +1,30 @@
+//! Async Rust client for the [SEC API](https://secapi.ai/developers).
+//!
+//! Create a [`SecApiClient`], resolve an issuer, and retrieve the latest matching filing:
+//!
+//! ```no_run
+//! use sec_api_sdk_rust::{LatestFilingRequest, ResolveEntityRequest, SecApiClient};
+//!
+//! # #[tokio::main]
+//! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let client = SecApiClient::new(None);
+//! let entity = client
+//!     .resolve_entity_with(&ResolveEntityRequest::new().ticker("AAPL"))
+//!     .await?;
+//! let filing = client
+//!     .latest_filing_with(&LatestFilingRequest::new().ticker("AAPL").form("10-K"))
+//!     .await?;
+//!
+//! println!("{entity}\n{filing}");
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! `SecApiClient::new(None)` reads `SECAPI_API_KEY` from the environment and
+//! sends it as `x-api-key`. Response bodies use [`serde_json::Value`] to retain
+//! the API response shape. See the [Rust SDK guide](https://docs.secapi.ai/rust-sdk)
+//! for authentication, retries, and endpoint guidance.
+
 use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE, RETRY_AFTER, USER_AGENT};
 use serde_json::{json, Value};
 use std::collections::{HashSet, VecDeque};
