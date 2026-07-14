@@ -1,87 +1,61 @@
 # SEC API Rust SDK
 
-`sec-api-sdk-rust` is an async Rust client for the [SEC API](https://secapi.ai/developers). Use it in services, workers, and command-line programs to retrieve issuer identities, filings, filing sections, statements, and other SEC API data.
+`sec-api-sdk-rust` is an async Rust client for SEC API filings, statements, ownership data, factor data, and filing sections.
 
-The client sends requests to `https://api.secapi.ai` by default. Response bodies are returned as `serde_json::Value`, so they retain the API response shape.
+[Documentation](https://docs.secapi.ai) · [Get an API key](https://secapi.ai/signup) · [Support](https://github.com/secapi-ai/secapi-rust) · [Status](https://status.secapi.ai)
 
-## Quickstart
+## Install and make a request
 
-Add the SDK and a Tokio runtime:
-
-```bash
-cargo add sec-api-sdk-rust
-cargo add tokio --features macros,rt-multi-thread
+```toml
+[dependencies]
+sec-api-sdk-rust = "1.0.2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
-
-Set an API key from your SEC API account in the environment:
 
 ```bash
 export SECAPI_API_KEY="secapi_live_..."
 ```
 
-Then resolve an issuer and request its latest annual filing:
-
 ```rust
-use sec_api_sdk_rust::{LatestFilingRequest, ResolveEntityRequest, SecApiClient};
+use sec_api_sdk_rust::{LatestFilingRequest, SecApiClient};
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let client = SecApiClient::new(None);
-
-    let entity = client
-        .resolve_entity_with(&ResolveEntityRequest::new().ticker("AAPL"))
-        .await?;
+async fn main() {
+    let client = SecApiClient::new(std::env::var("SECAPI_API_KEY").ok());
     let filing = client
         .latest_filing_with(&LatestFilingRequest::new().ticker("AAPL").form("10-K"))
-        .await?;
+        .await
+        .unwrap();
 
-    println!("entity: {entity}");
-    println!("latest 10-K: {filing}");
-    Ok(())
+    println!("{}", filing["accessionNumber"].as_str().unwrap());
+    println!("{}", filing["filingUrl"].as_str().unwrap());
 }
 ```
 
-The Cargo package is `sec-api-sdk-rust`; import it as `sec_api_sdk_rust`. The repository includes this workflow as [`examples/basic.rs`](examples/basic.rs), which you can run with `cargo run --example basic`.
+Run with `cargo run`. It prints the latest matching filing's accession number and SEC source URL; both can change after a new filing.
 
-## Authentication
-
-`SecApiClient::new(None)` reads `SECAPI_API_KEY` and sends it in the `x-api-key` header. Pass `Some(api_key)` when your application loads credentials itself. Keep API keys in a server-side secret store or runtime environment; never commit them or expose them in browser code.
-
-For endpoints that use a configured identity flow, set `SECAPI_BEARER_TOKEN` or call `with_bearer_token(...)`. `SECAPI_BASE_URL` overrides the default base URL. The legacy `OMNI_DATASTREAM_*` variables remain compatibility fallbacks; new integrations should use `SECAPI_*` names.
-
-## Use the API surface
-
-Typed builders cover issuer resolution, latest filings, latest filing sections, and semantic search. Other endpoints accept query pairs directly:
+## Common requests
 
 ```rust
-let filings = client
-    .search_filings(&[("ticker", "AAPL"), ("form", "10-K")])
+use sec_api_sdk_rust::{LatestSectionRequest, ResolveEntityRequest};
+
+let company = client.resolve_entity_with(&ResolveEntityRequest::new().ticker("AAPL")).await?;
+let section = client
+    .latest_section_with(&LatestSectionRequest::new("item_1a").ticker("AAPL").form("10-K").mode("compact"))
     .await?;
 ```
 
-Use `paginate_entities`, `paginate_filings`, or `paginate_sections` for cursor-based results. Pass every cursor returned by the API back unchanged to the same route.
+Typed builders cover entity resolution, latest filings, latest sections, and semantic search. Flat methods accept query-pair slices; grouped services such as `client.filings()` and `client.sections()` provide discoverable equivalents.
 
-The client also exposes service groups through `entities()`, `filings()`, `sections()`, `search()`, and `factors()`. Refer to the [API reference](https://docs.secapi.ai/api-reference) for each endpoint's accepted parameters and response fields.
+## Factor response modes
 
-## Responses and errors
+Use `response_mode=compact` when you want the smallest useful payload. Compact catalog responses still include readiness/proof summaries. Set `include=trust` only when you need the full trust/provenance envelope plus full methodology/materialization/revision/source-rights objects for citations or checks. For catalog/tool-discovery calls, start narrow with `category` and `limit`; the full trust envelope can be larger than a simple picker payload.
 
-Endpoint responses have the type `Result<serde_json::Value, SecApiError>`. Fields can differ by endpoint and response view, so treat the endpoint reference as the field contract. For filing-derived data, preserve `accessionNumber`, `filingDate`, `filingUrl`, and the request ID when present; a latest-filing request can change after a new filing arrives.
+## Configuration and compatibility
 
-For failures, `SecApiError` distinguishes transport errors, invalid credentials, JSON decode failures, and non-2xx API responses. API errors expose `status()`, `code()`, `message()`, `request_id()`, and `body()`. Log the request ID, not credentials.
+`SecApiClient::new(None)` reads `SECAPI_API_KEY` and `SECAPI_BEARER_TOKEN`; `OMNI_DATASTREAM_API_KEY` and `OMNI_DATASTREAM_BEARER_TOKEN` remain supported for compatibility. The default API version is `2026-03-19`. Use `with_base_url(...)` for a non-default origin.
 
-## Timeouts and retries
-
-The default request timeout is 30 seconds. The client retries safe `GET` requests up to two times after transport failures and HTTP `408`, `429`, `502`, `503`, or `504`, with bounded backoff that honors `Retry-After`. POST helpers retry only `429`.
-
-Use `with_timeout`, `with_retry_config`, `without_retries`, or `with_http_client` to set your application's transport policy. Keep retry ownership in one layer, reduce concurrency after `429`, and retry a write only when it is safe to repeat.
-
-## Documentation
-
-- [Rust SDK guide](https://docs.secapi.ai/rust-sdk)
-- [API overview](https://docs.secapi.ai/api-overview)
-- [API reference](https://docs.secapi.ai/api-reference)
-- [Rust API reference](https://docs.rs/sec-api-sdk-rust)
-- [Report an issue](https://github.com/secapi-ai/secapi-rust/issues)
+Methods return `Result<serde_json::Value, SecApiError>`. For API failures, `SecApiError` exposes status, code, message, request ID, and response body. Include the request ID when opening an issue in the [Rust SDK repository](https://github.com/secapi-ai/secapi-rust). See the [API documentation](https://docs.secapi.ai) for retries, pagination, and complete endpoint coverage.
 
 ## License
 

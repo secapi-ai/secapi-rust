@@ -1,32 +1,5 @@
-//! Async Rust client for the [SEC API](https://secapi.ai/developers).
-//!
-//! Create a [`SecApiClient`], resolve an issuer, and retrieve the latest matching filing:
-//!
-//! ```no_run
-//! use sec_api_sdk_rust::{LatestFilingRequest, ResolveEntityRequest, SecApiClient};
-//!
-//! # #[tokio::main]
-//! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! let client = SecApiClient::new(None);
-//! let entity = client
-//!     .resolve_entity_with(&ResolveEntityRequest::new().ticker("AAPL"))
-//!     .await?;
-//! let filing = client
-//!     .latest_filing_with(&LatestFilingRequest::new().ticker("AAPL").form("10-K"))
-//!     .await?;
-//!
-//! println!("{entity}\n{filing}");
-//! # Ok(())
-//! # }
-//! ```
-//!
-//! `SecApiClient::new(None)` reads `SECAPI_API_KEY` from the environment and
-//! sends it as `x-api-key`. Response bodies use [`serde_json::Value`] to retain
-//! the API response shape. See the [Rust SDK guide](https://docs.secapi.ai/rust-sdk)
-//! for authentication, retries, and endpoint guidance.
-
 use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE, RETRY_AFTER, USER_AGENT};
-use serde_json::{json, Value};
+use serde_json::{json, Map, Value};
 use std::collections::{HashSet, VecDeque};
 use std::fmt;
 use std::time::{Duration, SystemTime};
@@ -122,6 +95,122 @@ fn query_params_from_pairs(params: &[(&str, &str)]) -> QueryParams {
         next.set(*key, *value);
     }
     next
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SituationWatchDelivery {
+    Email(String),
+    OrganizationWebhook,
+}
+
+impl SituationWatchDelivery {
+    fn into_json(self) -> Result<Value, SecApiError> {
+        match self {
+            Self::Email(email) => {
+                let email = email.trim();
+                if email.is_empty() {
+                    return Err(client_validation_error("situations.watch email delivery requires a non-empty email"));
+                }
+                Ok(json!({"type": "email", "config": {"to": email}}))
+            }
+            Self::OrganizationWebhook => Ok(json!({"type": "webhook", "config": {"organizationEventFanout": true}})),
+        }
+    }
+}
+
+fn client_validation_error(message: impl Into<String>) -> SecApiError {
+    SecApiError::Api {
+        status: 0,
+        body: json!({
+            "code": "client_validation_error",
+            "message": message.into(),
+        }),
+    }
+}
+
+fn is_situation_id(value: &str) -> bool {
+    value.len() == 24
+        && value.starts_with("sit_")
+        && value[4..].chars().all(|entry| entry.is_ascii_hexdigit() && !entry.is_ascii_uppercase())
+}
+
+fn validate_situation_watch_filters(filters: &Value) -> Result<Value, SecApiError> {
+    let Some(object) = filters.as_object() else {
+        return Err(client_validation_error("situations.watch filters must be an object"));
+    };
+    if object.is_empty() {
+        return Err(client_validation_error("situations.watch requires at least one non-empty list filter"));
+    }
+    let allowed_keys: HashSet<&str> = ["situationIds", "types", "subtypes", "statuses", "tickers", "sectors"].into_iter().collect();
+    let allowed_types: HashSet<&str> = [
+        "merger", "tender_offer", "going_private", "spin_off", "divestiture",
+        "activist_campaign", "restructuring", "bankruptcy", "liquidation",
+        "strategic_review", "capital_return", "capital_raise", "spac", "delisting",
+        "relisting", "litigation", "management_change", "domicile_change",
+        "demutualization", "other",
+    ].into_iter().collect();
+    let allowed_subtypes: HashSet<&str> = [
+        "definitive", "preliminary", "unsolicited", "rumor_response", "scheme_of_arrangement", "spac_merger",
+        "self_tender", "third_party", "exchange_offer", "management_buyout", "sponsor_buyout", "squeeze_out",
+        "spin_off", "split_off", "carve_out_ipo", "asset_sale", "joint_venture", "carve_out", "stake_disclosure",
+        "proxy_contest", "cooperation_agreement", "settlement", "debt_for_equity_swap", "out_of_court", "operational",
+        "chapter_11", "chapter_7", "chapter_15", "administration", "prepackaged", "emergence", "plan_of_liquidation",
+        "dissolution", "formal_alternatives", "sale_process", "buyback_authorization", "special_dividend", "recapitalization",
+        "rights_offering", "public_offering", "private_placement", "pipe", "atm_program", "ipo", "extension",
+        "trust_liquidation", "forced", "voluntary", "uplisting", "otc_relisting", "won", "lost", "settled",
+        "ceo", "cfo", "chair", "board", "redomiciliation",
+    ].into_iter().collect();
+    let allowed_statuses: HashSet<&str> = ["rumored", "announced", "pending", "completed", "terminated", "expired"].into_iter().collect();
+    let mut normalized = Map::new();
+    for (key, value) in object {
+        if !allowed_keys.contains(key.as_str()) {
+            return Err(client_validation_error(format!("situations.watch has unsupported filter key: {key}")));
+        }
+        let Some(array) = value.as_array() else {
+            return Err(client_validation_error(format!("situations.watch filter {key} must be a non-empty list")));
+        };
+        if array.is_empty() {
+            return Err(client_validation_error(format!("situations.watch filter {key} must be a non-empty list")));
+        }
+        let mut values = Vec::with_capacity(array.len());
+        for entry in array {
+            let Some(raw) = entry.as_str() else {
+                return Err(client_validation_error(format!("situations.watch filter {key} values must be strings")));
+            };
+            let trimmed = raw.trim();
+            if trimmed.is_empty() {
+                return Err(client_validation_error(format!("situations.watch filter {key} cannot contain blank values")));
+            }
+            values.push(Value::String(trimmed.to_string()));
+        }
+        normalized.insert(key.clone(), Value::Array(values));
+    }
+    if let Some(types) = normalized.get("types").and_then(Value::as_array) {
+        if types.len() > 50 || types.iter().any(|value| !value.as_str().is_some_and(|entry| allowed_types.contains(entry))) {
+            return Err(client_validation_error("situations.watch types must be canonical situation types (maximum 50)"));
+        }
+    }
+    if let Some(subtypes) = normalized.get("subtypes").and_then(Value::as_array) {
+        if subtypes.len() > 100 || subtypes.iter().any(|value| !value.as_str().is_some_and(|entry| allowed_subtypes.contains(entry))) {
+            return Err(client_validation_error("situations.watch subtypes must be canonical situation subtypes (maximum 100)"));
+        }
+    }
+    if let Some(statuses) = normalized.get("statuses").and_then(Value::as_array) {
+        if statuses.len() > 10 || statuses.iter().any(|value| !value.as_str().is_some_and(|entry| allowed_statuses.contains(entry))) {
+            return Err(client_validation_error("situations.watch statuses must be canonical lifecycle statuses (maximum 10)"));
+        }
+    }
+    if let Some(situation_ids) = normalized.get("situationIds").and_then(Value::as_array) {
+        if situation_ids.len() > 50 || situation_ids.iter().any(|value| !value.as_str().is_some_and(is_situation_id)) {
+            return Err(client_validation_error("situations.watch situationIds must be canonical ids (maximum 50)"));
+        }
+    }
+    if normalized.get("tickers").and_then(Value::as_array).map_or(0, Vec::len) > 200
+        || normalized.get("sectors").and_then(Value::as_array).map_or(0, Vec::len) > 200
+    {
+        return Err(client_validation_error("situations.watch tickers and sectors allow at most 200 values"));
+    }
+    Ok(Value::Object(normalized))
 }
 
 fn page_items(page: &Value) -> Result<Vec<Value>, PageIteratorError> {
@@ -769,6 +858,10 @@ impl SecApiClient {
         FactorService { client: self }
     }
 
+    pub fn situations(&self) -> SituationService<'_> {
+        SituationService { client: self }
+    }
+
     fn headers(&self) -> Result<HeaderMap, SecApiError> {
         let mut headers = HeaderMap::new();
         headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
@@ -813,6 +906,44 @@ impl SecApiClient {
                     let text = response.text().await?;
                     if (200..300).contains(&status) {
                         return serde_json::from_str(&text).map_err(SecApiError::JsonDecode);
+                    }
+                    return Err(api_error(status, text, request_id));
+                }
+                Err(error) => {
+                    if attempt < self.retry_config.max_retries {
+                        tokio::time::sleep(retry_delay(attempt, self.retry_config, None)).await;
+                        continue;
+                    }
+                    return Err(error.into());
+                }
+            }
+        }
+        unreachable!("retry loop always returns")
+    }
+
+    async fn get_text(&self, path: &str, params: &[(&str, &str)]) -> Result<String, SecApiError> {
+        let url = format!("{}{}", self.base_url.trim_end_matches('/'), path);
+        for attempt in 0..=self.retry_config.max_retries {
+            let response = self
+                .http
+                .get(&url)
+                .headers(self.headers()?)
+                .query(params)
+                .send()
+                .await;
+            match response {
+                Ok(response) => {
+                    let status = response.status().as_u16();
+                    if is_retryable_status(status) && attempt < self.retry_config.max_retries {
+                        let retry_after = response.headers().get(RETRY_AFTER).cloned();
+                        drop(response);
+                        tokio::time::sleep(retry_delay(attempt, self.retry_config, retry_after.as_ref())).await;
+                        continue;
+                    }
+                    let request_id = response_request_id(response.headers());
+                    let text = response.text().await?;
+                    if (200..300).contains(&status) {
+                        return Ok(text);
                     }
                     return Err(api_error(status, text, request_id));
                 }
@@ -980,10 +1111,6 @@ impl SecApiClient {
         self.get("/v1/market/calendar", params).await
     }
 
-    pub async fn market_estimates(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
-        self.get("/v1/market/estimates", params).await
-    }
-
     pub async fn market_snapshots(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/market/snapshots", params).await
     }
@@ -1002,6 +1129,103 @@ impl SecApiClient {
 
     pub async fn news_stories(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/news/stories", params).await
+    }
+
+    pub async fn list_situations(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/situations", params).await
+    }
+
+    pub async fn get_situation(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/situations/{}", urlencoding::encode(situation_id)), params).await
+    }
+
+    pub async fn situations_by_form(&self, form: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/situations/by-form/{}", urlencoding::encode(form)), params).await
+    }
+
+    pub async fn situations_feed(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/situations/feed", params).await
+    }
+
+    pub async fn situations_feed_rss(&self, params: &[(&str, &str)]) -> Result<String, SecApiError> {
+        self.get_text("/v1/situations/feed.rss", params).await
+    }
+
+    pub async fn situations_issues(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/situations/issues", params).await
+    }
+
+    pub async fn situation_issue(&self, issue: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/situations/issues/{}", urlencoding::encode(issue)), params).await
+    }
+
+    pub async fn situations_calendar(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/situations/calendar", params).await
+    }
+
+    pub async fn situations_stats(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/situations/stats", params).await
+    }
+
+    pub async fn situations_performance(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/situations/performance", params).await
+    }
+
+    pub async fn situation_filings(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/situations/{}/filings", urlencoding::encode(situation_id)), params).await
+    }
+
+    pub async fn situation_summary(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/situations/{}/summary", urlencoding::encode(situation_id)), params).await
+    }
+
+    pub async fn export_situation(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<String, SecApiError> {
+        self.get_text(&format!("/v1/situations/{}/export", urlencoding::encode(situation_id)), params).await
+    }
+
+    pub async fn underwrite_situation(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/situations/{}/underwriting-pack", urlencoding::encode(situation_id)), params).await
+    }
+
+    pub async fn watch_situations(
+        &self,
+        filters: &Value,
+        delivery: SituationWatchDelivery,
+        name: Option<&str>,
+        start_at: Option<&str>,
+    ) -> Result<Value, SecApiError> {
+        let normalized_filters = validate_situation_watch_filters(filters)?;
+        let watch_name = name
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .unwrap_or("Special Situations watch");
+        let mut body = json!({
+            "name": watch_name,
+            "query": "situations.watch",
+            "searchMode": "situation",
+            "filters": normalized_filters,
+            "delivery": delivery.into_json()?,
+        });
+        if let Some(start_at) = start_at.map(str::trim).filter(|value| !value.is_empty()) {
+            body["startAt"] = Value::String(start_at.to_string());
+        }
+        self.post_json("/v1/monitors", &body).await
+    }
+
+    pub async fn embed_situations(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/embed/situations", params).await
+    }
+
+    pub async fn embed_situation(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/embed/situations/{}", urlencoding::encode(situation_id)), params).await
+    }
+
+    pub async fn embed_situation_issues(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/embed/situations/issues", params).await
+    }
+
+    pub async fn embed_situation_issue(&self, issue: &str) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/embed/situations/issues/{}", urlencoding::encode(issue)), &[]).await
     }
 
     pub async fn macro_search(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
@@ -1070,10 +1294,6 @@ impl SecApiClient {
 
     pub async fn factor_correlations(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/factors/correlations", params).await
-    }
-
-    pub async fn factor_screen(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
-        self.get("/v1/factors/screen", params).await
     }
 
     pub async fn factor_extreme_moves(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
@@ -1238,10 +1458,6 @@ impl SecApiClient {
         id: Option<&str>,
     ) -> Result<Value, SecApiError> {
         self.post_json("/mcp", &mcp_tool_call_body(tool_name, arguments, id)).await
-    }
-
-    pub async fn request_diagnostics(&self, request_id: &str) -> Result<Value, SecApiError> {
-        self.get(&format!("/v1/diagnostics/requests/{}", urlencoding::encode(request_id)), &[]).await
     }
 
     pub async fn delete_api_key(&self, key_id: &str) -> Result<(), SecApiError> {
@@ -1526,6 +1742,79 @@ impl<'a> SearchService<'a> {
 }
 
 #[derive(Clone, Copy)]
+pub struct SituationService<'a> {
+    client: &'a SecApiClient,
+}
+
+impl<'a> SituationService<'a> {
+    pub async fn list(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.list_situations(params).await
+    }
+
+    pub async fn get(self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.get_situation(situation_id, params).await
+    }
+
+    pub async fn by_form(self, form: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situations_by_form(form, params).await
+    }
+
+    pub async fn feed(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situations_feed(params).await
+    }
+
+    pub async fn feed_rss(self, params: &[(&str, &str)]) -> Result<String, SecApiError> {
+        self.client.situations_feed_rss(params).await
+    }
+
+    pub async fn issues(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situations_issues(params).await
+    }
+
+    pub async fn issue(self, issue: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situation_issue(issue, params).await
+    }
+
+    pub async fn calendar(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situations_calendar(params).await
+    }
+
+    pub async fn stats(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situations_stats(params).await
+    }
+
+    pub async fn performance(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situations_performance(params).await
+    }
+
+    pub async fn filings(self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situation_filings(situation_id, params).await
+    }
+
+    pub async fn summary(self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.situation_summary(situation_id, params).await
+    }
+
+    pub async fn export(self, situation_id: &str, params: &[(&str, &str)]) -> Result<String, SecApiError> {
+        self.client.export_situation(situation_id, params).await
+    }
+
+    pub async fn underwrite(self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.underwrite_situation(situation_id, params).await
+    }
+
+    pub async fn watch(
+        self,
+        filters: &Value,
+        delivery: SituationWatchDelivery,
+        name: Option<&str>,
+        start_at: Option<&str>,
+    ) -> Result<Value, SecApiError> {
+        self.client.watch_situations(filters, delivery, name, start_at).await
+    }
+}
+
+#[derive(Clone, Copy)]
 pub struct FactorService<'a> {
     client: &'a SecApiClient,
 }
@@ -1561,10 +1850,6 @@ impl<'a> FactorService<'a> {
 
     pub async fn correlations(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.client.factor_correlations(params).await
-    }
-
-    pub async fn screen(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
-        self.client.factor_screen(params).await
     }
 
     pub async fn extreme_moves(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
@@ -1930,34 +2215,12 @@ mod tests {
 
         assert!(raw_request.contains("x-sdk-test: custom-client"));
         assert!(raw_request.contains("accept: application/json"));
-        let want_user_agent = format!("user-agent: secapi-rust/{}", env!("CARGO_PKG_VERSION"));
-        assert!(raw_request.contains(want_user_agent.as_str()));
+        assert!(raw_request.contains(&format!(
+            "user-agent: secapi-rust/{}",
+            env!("CARGO_PKG_VERSION")
+        )));
         assert!(raw_request.contains("content-type: application/json"));
         assert!(raw_request.contains("secapi-version: 2026-03-19"));
-    }
-
-    #[tokio::test]
-    async fn request_diagnostics_escapes_request_id() {
-        let response = concat!(
-            "HTTP/1.1 200 OK\r\n",
-            "content-type: application/json\r\n",
-            "content-length: 11\r\n",
-            "connection: close\r\n",
-            "\r\n",
-            "{\"ok\":true}"
-        );
-        let (base_url, rx, handle) = raw_capture_server(response);
-        let client = SecApiClient::new(None)
-            .with_base_url(base_url)
-            .without_retries();
-
-        let payload = client.request_diagnostics("req/with space").await.unwrap();
-
-        let raw_request = rx.recv_timeout(Duration::from_secs(2)).expect("raw request");
-        handle.join().expect("raw capture server thread");
-
-        assert_eq!(payload["ok"], json!(true));
-        assert!(raw_request.contains("GET /v1/diagnostics/requests/req%2Fwith%20space HTTP/1.1"));
     }
 
     #[tokio::test]
@@ -2388,6 +2651,134 @@ mod tests {
             targets[2],
             "/v1/filings/0000320193%2F25%20000079/sections/item%2F7%20md%26a?mode=compact"
         );
+    }
+
+    #[tokio::test]
+    async fn embed_situation_helpers_route_to_public_surface() {
+        let (base_url, rx, handle) = capture_server(4);
+        let client = SecApiClient::new(None).with_base_url(base_url);
+
+        client.embed_situations(&[("limit", "20"), ("tickers", "AAPL")]).await.unwrap();
+        client.embed_situation("sit/with spaces", &[]).await.unwrap();
+        client.embed_situation_issues(&[("limit", "12")]).await.unwrap();
+        client.embed_situation_issue("special/situations digest 22").await.unwrap();
+
+        let targets: Vec<String> = (0..4)
+            .map(|_| rx.recv_timeout(Duration::from_secs(2)).expect("request target"))
+            .collect();
+        handle.join().expect("capture server thread");
+
+        assert_eq!(targets[0], "/v1/embed/situations?limit=20&tickers=AAPL");
+        assert_eq!(targets[1], "/v1/embed/situations/sit%2Fwith%20spaces");
+        assert_eq!(targets[2], "/v1/embed/situations/issues?limit=12");
+        assert_eq!(
+            targets[3],
+            "/v1/embed/situations/issues/special%2Fsituations%20digest%2022"
+        );
+    }
+
+    #[tokio::test]
+    async fn paid_situation_helpers_route_to_authenticated_surface() {
+        let (base_url, rx, handle) = capture_server(9);
+        let client = SecApiClient::new(None).with_base_url(base_url);
+
+        client.list_situations(&[("types", "merger,tender_offer"), ("limit", "20")]).await.unwrap();
+        client.get_situation("sit/with spaces", &[("enrich", "false")]).await.unwrap();
+        client.situations_feed(&[("tickers", "AAPL,MSFT")]).await.unwrap();
+        client.situations_issues(&[("limit", "12")]).await.unwrap();
+        client.situation_issue("special/situations digest 22", &[]).await.unwrap();
+        client.situations_calendar(&[("statuses", "pending")]).await.unwrap();
+        client.situations_stats(&[("window", "30d")]).await.unwrap();
+        client.export_situation("sit/with spaces", &[]).await.unwrap();
+        client.underwrite_situation("sit/with spaces", &[]).await.unwrap();
+
+        let targets: Vec<String> = (0..9)
+            .map(|_| rx.recv_timeout(Duration::from_secs(2)).expect("request target"))
+            .collect();
+        handle.join().expect("capture server thread");
+
+        assert_eq!(targets[0], "/v1/situations?types=merger%2Ctender_offer&limit=20");
+        assert_eq!(targets[1], "/v1/situations/sit%2Fwith%20spaces?enrich=false");
+        assert_eq!(targets[2], "/v1/situations/feed?tickers=AAPL%2CMSFT");
+        assert_eq!(targets[3], "/v1/situations/issues?limit=12");
+        assert_eq!(targets[4], "/v1/situations/issues/special%2Fsituations%20digest%2022");
+        assert_eq!(targets[5], "/v1/situations/calendar?statuses=pending");
+        assert_eq!(targets[6], "/v1/situations/stats?window=30d");
+        assert_eq!(targets[7], "/v1/situations/sit%2Fwith%20spaces/export");
+        assert_eq!(targets[8], "/v1/situations/sit%2Fwith%20spaces/underwriting-pack");
+    }
+
+    #[tokio::test]
+    async fn watch_situations_uses_monitor_substrate() {
+        let response = concat!(
+            "HTTP/1.1 200 OK\r\n",
+            "content-type: application/json\r\n",
+            "content-length: 11\r\n",
+            "connection: close\r\n",
+            "\r\n",
+            "{\"ok\":true}"
+        );
+        let (base_url, rx, handle) = raw_capture_server(response);
+        let client = SecApiClient::new(None).with_base_url(base_url);
+
+        client
+            .situations()
+            .watch(
+                &json!({"types": ["merger"], "tickers": [" AAPL "]}),
+                SituationWatchDelivery::Email(" desk@example.com ".to_string()),
+                Some(" Deals "),
+                Some("2026-07-13T00:00:00Z"),
+            )
+            .await
+            .unwrap();
+
+        let raw_request = rx.recv_timeout(Duration::from_secs(2)).expect("raw request");
+        handle.join().expect("raw capture server thread");
+
+        assert!(raw_request.starts_with("POST /v1/monitors HTTP/1.1"));
+        assert!(raw_request.contains(r#""query":"situations.watch""#));
+        assert!(raw_request.contains(r#""searchMode":"situation""#));
+        assert!(raw_request.contains(r#""name":"Deals""#));
+        assert!(raw_request.contains(r#""delivery":{"config":{"to":"desk@example.com"},"type":"email"}"#));
+        assert!(raw_request.contains(r#""filters":{"tickers":["AAPL"],"types":["merger"]}"#));
+    }
+
+    #[tokio::test]
+    async fn watch_situations_validates_filters_and_delivery() {
+        let (base_url, _rx, handle) = capture_server(0);
+        let client = SecApiClient::new(None).with_base_url(base_url);
+
+        let missing_filters = client
+            .watch_situations(&json!({}), SituationWatchDelivery::OrganizationWebhook, None, None)
+            .await
+            .expect_err("expected missing filter error");
+        assert!(missing_filters.to_string().contains("at least one"));
+
+        let invalid_type = client
+            .watch_situations(&json!({"types": ["not-a-type"]}), SituationWatchDelivery::OrganizationWebhook, None, None)
+            .await
+            .expect_err("expected invalid type error");
+        assert!(invalid_type.to_string().contains("canonical situation types"));
+
+        let invalid_subtype = client
+            .watch_situations(&json!({"subtypes": ["not-a-subtype"]}), SituationWatchDelivery::OrganizationWebhook, None, None)
+            .await
+            .expect_err("expected invalid subtype error");
+        assert!(invalid_subtype.to_string().contains("canonical situation subtypes"));
+
+        let invalid_situation_id = client
+            .watch_situations(&json!({"situationIds": ["not-a-situation-id"]}), SituationWatchDelivery::OrganizationWebhook, None, None)
+            .await
+            .expect_err("expected invalid situation id error");
+        assert!(invalid_situation_id.to_string().contains("canonical ids"));
+
+        let invalid_delivery = client
+            .watch_situations(&json!({"types": ["merger"]}), SituationWatchDelivery::Email(" ".to_string()), None, None)
+            .await
+            .expect_err("expected invalid delivery error");
+        assert!(invalid_delivery.to_string().contains("non-empty email"));
+
+        handle.join().expect("zero-request server thread");
     }
 
     #[test]
