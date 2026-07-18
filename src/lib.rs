@@ -2623,7 +2623,8 @@ mod tests {
         let handle = thread::spawn(move || {
             let (mut stream, _) = listener.accept().expect("accept request");
             let mut buffer = [0; 4096];
-            stream.read(&mut buffer).expect("read request");
+            let read = stream.read(&mut buffer).expect("read request");
+            assert!(read > 0, "expected response server request bytes");
             stream
                 .write_all(response.as_bytes())
                 .expect("write response");
@@ -2751,7 +2752,8 @@ mod tests {
                 .set_read_timeout(Some(Duration::from_secs(2)))
                 .expect("set slow server read timeout");
             let mut buffer = [0; 4096];
-            stream.read(&mut buffer).expect("read request");
+            let read = stream.read(&mut buffer).expect("read request");
+            assert!(read > 0, "expected slow server request bytes");
             thread::sleep(delay);
             let response = concat!(
                 "HTTP/1.1 200 OK\r\n",
