@@ -1,6 +1,6 @@
 [package]
 name = "sec-api-sdk-rust"
-version = "1.0.3"
+version = "1.0.4"
 edition = "2021"
 description = "Async Rust client for SEC API filings and issuer data"
 license = "MIT"
