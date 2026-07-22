@@ -2,7 +2,7 @@
 name = "sec-api-sdk-rust"
 version = "2.0.0"
 edition = "2021"
-description = "Bootstrap Rust client for SEC API"
+description = "Async Rust SDK for SEC filings, financial statements, ownership, and issuer data"
 license = "MIT"
 readme = "README.md"
 homepage = "https://secapi.ai/developers"
