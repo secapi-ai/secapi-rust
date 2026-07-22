@@ -5,8 +5,9 @@ use sec_api_sdk_rust::{
 #[tokio::main]
 async fn main() {
     let api_key = std::env::var("SECAPI_API_KEY").ok();
-    // Uses https://api.secapi.ai by default; SECAPI_BASE_URL may override it.
-    let client = SecApiClient::new(api_key);
+    let client = SecApiClient::new(api_key).with_base_url(
+        std::env::var("SECAPI_BASE_URL").unwrap_or_else(|_| "http://localhost:8787".to_string()),
+    );
     let entity = client
         .resolve_entity_with(&ResolveEntityRequest::new().ticker("AAPL"))
         .await

@@ -1,6 +1,4 @@
-use reqwest::header::{
-    HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE, RETRY_AFTER, USER_AGENT,
-};
+use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE, RETRY_AFTER, USER_AGENT};
 use serde_json::{json, Map, Value};
 use std::collections::{HashSet, VecDeque};
 use std::fmt;
@@ -99,6 +97,132 @@ fn query_params_from_pairs(params: &[(&str, &str)]) -> QueryParams {
     next
 }
 
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct SituationListRequest {
+    params: QueryParams,
+}
+
+impl SituationListRequest {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    fn param(mut self, key: &str, value: impl Into<String>) -> Self {
+        self.params.set(key, value);
+        self
+    }
+
+    pub fn types(self, value: impl Into<String>) -> Self { self.param("types", value) }
+    pub fn subtypes(self, value: impl Into<String>) -> Self { self.param("subtypes", value) }
+    pub fn statuses(self, value: impl Into<String>) -> Self { self.param("statuses", value) }
+    pub fn tickers(self, value: impl Into<String>) -> Self { self.param("tickers", value) }
+    pub fn forms(self, value: impl Into<String>) -> Self { self.param("forms", value) }
+    pub fn sectors(self, value: impl Into<String>) -> Self { self.param("sectors", value) }
+    pub fn market_cap(self, value: impl Into<String>) -> Self { self.param("market_cap", value) }
+    pub fn country(self, value: impl Into<String>) -> Self { self.param("country", value) }
+    pub fn announced_from(self, value: impl Into<String>) -> Self { self.param("announced_from", value) }
+    pub fn announced_to(self, value: impl Into<String>) -> Self { self.param("announced_to", value) }
+    pub fn updated_from(self, value: impl Into<String>) -> Self { self.param("updated_from", value) }
+    pub fn enrich(self, value: impl Into<String>) -> Self { self.param("enrich", value) }
+    pub fn cursor(self, value: impl Into<String>) -> Self { self.param("cursor", value) }
+    pub fn limit(self, value: impl Into<String>) -> Self { self.param("limit", value) }
+    pub fn response_mode(self, value: impl Into<String>) -> Self { self.param("response_mode", value) }
+    pub fn extra(self, key: impl Into<String>, value: impl Into<String>) -> Self { self.param(&key.into(), value) }
+    pub fn params(&self) -> QueryParams { self.params.clone() }
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct SituationFeedRequest {
+    params: QueryParams,
+}
+
+impl SituationFeedRequest {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    fn param(mut self, key: &str, value: impl Into<String>) -> Self {
+        self.params.set(key, value);
+        self
+    }
+
+    pub fn types(self, value: impl Into<String>) -> Self { self.param("types", value) }
+    pub fn categories(self, value: impl Into<String>) -> Self { self.param("categories", value) }
+    pub fn tickers(self, value: impl Into<String>) -> Self { self.param("tickers", value) }
+    pub fn country(self, value: impl Into<String>) -> Self { self.param("country", value) }
+    pub fn since(self, value: impl Into<String>) -> Self { self.param("since", value) }
+    pub fn cursor(self, value: impl Into<String>) -> Self { self.param("cursor", value) }
+    pub fn limit(self, value: impl Into<String>) -> Self { self.param("limit", value) }
+    pub fn extra(self, key: impl Into<String>, value: impl Into<String>) -> Self { self.param(&key.into(), value) }
+    pub fn params(&self) -> QueryParams { self.params.clone() }
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct SituationFeedRssRequest {
+    params: QueryParams,
+}
+
+impl SituationFeedRssRequest {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    fn param(mut self, key: &str, value: impl Into<String>) -> Self {
+        self.params.set(key, value);
+        self
+    }
+
+    pub fn types(self, value: impl Into<String>) -> Self { self.param("types", value) }
+    pub fn categories(self, value: impl Into<String>) -> Self { self.param("categories", value) }
+    pub fn tickers(self, value: impl Into<String>) -> Self { self.param("tickers", value) }
+    pub fn country(self, value: impl Into<String>) -> Self { self.param("country", value) }
+    pub fn since(self, value: impl Into<String>) -> Self { self.param("since", value) }
+    pub fn extra(self, key: impl Into<String>, value: impl Into<String>) -> Self { self.param(&key.into(), value) }
+    pub fn params(&self) -> QueryParams { self.params.clone() }
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct SituationMemberRequest {
+    params: QueryParams,
+}
+
+impl SituationMemberRequest {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    fn param(mut self, key: &str, value: impl Into<String>) -> Self {
+        self.params.set(key, value);
+        self
+    }
+
+    pub fn enrich(self, value: impl Into<String>) -> Self { self.param("enrich", value) }
+    pub fn limit(self, value: impl Into<String>) -> Self { self.param("limit", value) }
+    pub fn cursor(self, value: impl Into<String>) -> Self { self.param("cursor", value) }
+    pub fn extra(self, key: impl Into<String>, value: impl Into<String>) -> Self { self.param(&key.into(), value) }
+    pub fn params(&self) -> QueryParams { self.params.clone() }
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct SituationIssueListRequest {
+    params: QueryParams,
+}
+
+impl SituationIssueListRequest {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    fn param(mut self, key: &str, value: impl Into<String>) -> Self {
+        self.params.set(key, value);
+        self
+    }
+
+    pub fn limit(self, value: impl Into<String>) -> Self { self.param("limit", value) }
+    pub fn extra(self, key: impl Into<String>, value: impl Into<String>) -> Self { self.param(&key.into(), value) }
+    pub fn params(&self) -> QueryParams { self.params.clone() }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SituationWatchDelivery {
     Email(String),
@@ -111,15 +235,11 @@ impl SituationWatchDelivery {
             Self::Email(email) => {
                 let email = email.trim();
                 if email.is_empty() {
-                    return Err(client_validation_error(
-                        "situations.watch email delivery requires a non-empty email",
-                    ));
+                    return Err(client_validation_error("situations.watch email delivery requires a non-empty email"));
                 }
                 Ok(json!({"type": "email", "config": {"to": email}}))
             }
-            Self::OrganizationWebhook => {
-                Ok(json!({"type": "webhook", "config": {"organizationEventFanout": true}}))
-            }
+            Self::OrganizationWebhook => Ok(json!({"type": "webhook", "config": {"organizationEventFanout": true}})),
         }
     }
 }
@@ -137,226 +257,84 @@ fn client_validation_error(message: impl Into<String>) -> SecApiError {
 fn is_situation_id(value: &str) -> bool {
     value.len() == 24
         && value.starts_with("sit_")
-        && value[4..]
-            .chars()
-            .all(|entry| entry.is_ascii_hexdigit() && !entry.is_ascii_uppercase())
+        && value[4..].chars().all(|entry| entry.is_ascii_hexdigit() && !entry.is_ascii_uppercase())
 }
 
 fn validate_situation_watch_filters(filters: &Value) -> Result<Value, SecApiError> {
     let Some(object) = filters.as_object() else {
-        return Err(client_validation_error(
-            "situations.watch filters must be an object",
-        ));
+        return Err(client_validation_error("situations.watch filters must be an object"));
     };
     if object.is_empty() {
-        return Err(client_validation_error(
-            "situations.watch requires at least one non-empty list filter",
-        ));
+        return Err(client_validation_error("situations.watch requires at least one non-empty list filter"));
     }
-    let allowed_keys: HashSet<&str> = [
-        "situationIds",
-        "types",
-        "subtypes",
-        "statuses",
-        "tickers",
-        "sectors",
-    ]
-    .into_iter()
-    .collect();
+    let allowed_keys: HashSet<&str> = ["situationIds", "types", "subtypes", "statuses", "tickers", "sectors"].into_iter().collect();
     let allowed_types: HashSet<&str> = [
-        "merger",
-        "tender_offer",
-        "going_private",
-        "spin_off",
-        "divestiture",
-        "activist_campaign",
-        "restructuring",
-        "bankruptcy",
-        "liquidation",
-        "strategic_review",
-        "capital_return",
-        "capital_raise",
-        "spac",
-        "delisting",
-        "relisting",
-        "litigation",
-        "management_change",
-        "domicile_change",
-        "demutualization",
-        "other",
-    ]
-    .into_iter()
-    .collect();
+        "merger", "tender_offer", "going_private", "spin_off", "divestiture",
+        "activist_campaign", "restructuring", "bankruptcy", "liquidation",
+        "strategic_review", "capital_return", "capital_raise", "spac", "delisting",
+        "relisting", "litigation", "management_change", "domicile_change",
+        "demutualization", "other",
+    ].into_iter().collect();
     let allowed_subtypes: HashSet<&str> = [
-        "definitive",
-        "preliminary",
-        "unsolicited",
-        "rumor_response",
-        "scheme_of_arrangement",
-        "spac_merger",
-        "self_tender",
-        "third_party",
-        "exchange_offer",
-        "management_buyout",
-        "sponsor_buyout",
-        "squeeze_out",
-        "spin_off",
-        "split_off",
-        "carve_out_ipo",
-        "asset_sale",
-        "joint_venture",
-        "carve_out",
-        "stake_disclosure",
-        "proxy_contest",
-        "cooperation_agreement",
-        "settlement",
-        "debt_for_equity_swap",
-        "out_of_court",
-        "operational",
-        "chapter_11",
-        "chapter_7",
-        "chapter_15",
-        "administration",
-        "prepackaged",
-        "emergence",
-        "plan_of_liquidation",
-        "dissolution",
-        "formal_alternatives",
-        "sale_process",
-        "buyback_authorization",
-        "special_dividend",
-        "recapitalization",
-        "rights_offering",
-        "public_offering",
-        "private_placement",
-        "pipe",
-        "atm_program",
-        "ipo",
-        "extension",
-        "trust_liquidation",
-        "forced",
-        "voluntary",
-        "uplisting",
-        "otc_relisting",
-        "won",
-        "lost",
-        "settled",
-        "ceo",
-        "cfo",
-        "chair",
-        "board",
-        "redomiciliation",
-    ]
-    .into_iter()
-    .collect();
-    let allowed_statuses: HashSet<&str> = [
-        "rumored",
-        "announced",
-        "pending",
-        "completed",
-        "terminated",
-        "expired",
-    ]
-    .into_iter()
-    .collect();
+        "definitive", "preliminary", "unsolicited", "rumor_response", "scheme_of_arrangement", "spac_merger",
+        "self_tender", "third_party", "exchange_offer", "management_buyout", "sponsor_buyout", "squeeze_out",
+        "spin_off", "split_off", "carve_out_ipo", "asset_sale", "joint_venture", "carve_out", "stake_disclosure",
+        "proxy_contest", "cooperation_agreement", "settlement", "debt_for_equity_swap", "out_of_court", "operational",
+        "chapter_11", "chapter_7", "chapter_15", "administration", "prepackaged", "emergence", "plan_of_liquidation",
+        "dissolution", "formal_alternatives", "sale_process", "buyback_authorization", "special_dividend", "recapitalization",
+        "rights_offering", "public_offering", "private_placement", "pipe", "atm_program", "ipo", "extension",
+        "trust_liquidation", "forced", "voluntary", "uplisting", "otc_relisting", "won", "lost", "settled",
+        "ceo", "cfo", "chair", "board", "redomiciliation",
+    ].into_iter().collect();
+    let allowed_statuses: HashSet<&str> = ["rumored", "announced", "pending", "completed", "terminated", "expired"].into_iter().collect();
     let mut normalized = Map::new();
     for (key, value) in object {
         if !allowed_keys.contains(key.as_str()) {
-            return Err(client_validation_error(format!(
-                "situations.watch has unsupported filter key: {key}"
-            )));
+            return Err(client_validation_error(format!("situations.watch has unsupported filter key: {key}")));
         }
         let Some(array) = value.as_array() else {
-            return Err(client_validation_error(format!(
-                "situations.watch filter {key} must be a non-empty list"
-            )));
+            return Err(client_validation_error(format!("situations.watch filter {key} must be a non-empty list")));
         };
         if array.is_empty() {
-            return Err(client_validation_error(format!(
-                "situations.watch filter {key} must be a non-empty list"
-            )));
+            return Err(client_validation_error(format!("situations.watch filter {key} must be a non-empty list")));
         }
         let mut values = Vec::with_capacity(array.len());
         for entry in array {
             let Some(raw) = entry.as_str() else {
-                return Err(client_validation_error(format!(
-                    "situations.watch filter {key} values must be strings"
-                )));
+                return Err(client_validation_error(format!("situations.watch filter {key} values must be strings")));
             };
             let trimmed = raw.trim();
             if trimmed.is_empty() {
-                return Err(client_validation_error(format!(
-                    "situations.watch filter {key} cannot contain blank values"
-                )));
+                return Err(client_validation_error(format!("situations.watch filter {key} cannot contain blank values")));
             }
             values.push(Value::String(trimmed.to_string()));
         }
         normalized.insert(key.clone(), Value::Array(values));
     }
     if let Some(types) = normalized.get("types").and_then(Value::as_array) {
-        if types.len() > 50
-            || types.iter().any(|value| {
-                !value
-                    .as_str()
-                    .is_some_and(|entry| allowed_types.contains(entry))
-            })
-        {
-            return Err(client_validation_error(
-                "situations.watch types must be canonical situation types (maximum 50)",
-            ));
+        if types.len() > 50 || types.iter().any(|value| !value.as_str().is_some_and(|entry| allowed_types.contains(entry))) {
+            return Err(client_validation_error("situations.watch types must be canonical situation types (maximum 50)"));
         }
     }
     if let Some(subtypes) = normalized.get("subtypes").and_then(Value::as_array) {
-        if subtypes.len() > 100
-            || subtypes.iter().any(|value| {
-                !value
-                    .as_str()
-                    .is_some_and(|entry| allowed_subtypes.contains(entry))
-            })
-        {
-            return Err(client_validation_error(
-                "situations.watch subtypes must be canonical situation subtypes (maximum 100)",
-            ));
+        if subtypes.len() > 100 || subtypes.iter().any(|value| !value.as_str().is_some_and(|entry| allowed_subtypes.contains(entry))) {
+            return Err(client_validation_error("situations.watch subtypes must be canonical situation subtypes (maximum 100)"));
         }
     }
     if let Some(statuses) = normalized.get("statuses").and_then(Value::as_array) {
-        if statuses.len() > 10
-            || statuses.iter().any(|value| {
-                !value
-                    .as_str()
-                    .is_some_and(|entry| allowed_statuses.contains(entry))
-            })
-        {
-            return Err(client_validation_error(
-                "situations.watch statuses must be canonical lifecycle statuses (maximum 10)",
-            ));
+        if statuses.len() > 10 || statuses.iter().any(|value| !value.as_str().is_some_and(|entry| allowed_statuses.contains(entry))) {
+            return Err(client_validation_error("situations.watch statuses must be canonical lifecycle statuses (maximum 10)"));
         }
     }
     if let Some(situation_ids) = normalized.get("situationIds").and_then(Value::as_array) {
-        if situation_ids.len() > 50
-            || situation_ids
-                .iter()
-                .any(|value| !value.as_str().is_some_and(is_situation_id))
-        {
-            return Err(client_validation_error(
-                "situations.watch situationIds must be canonical ids (maximum 50)",
-            ));
+        if situation_ids.len() > 50 || situation_ids.iter().any(|value| !value.as_str().is_some_and(is_situation_id)) {
+            return Err(client_validation_error("situations.watch situationIds must be canonical ids (maximum 50)"));
         }
     }
-    if normalized
-        .get("tickers")
-        .and_then(Value::as_array)
-        .map_or(0, Vec::len)
-        > 200
-        || normalized
-            .get("sectors")
-            .and_then(Value::as_array)
-            .map_or(0, Vec::len)
-            > 200
+    if normalized.get("tickers").and_then(Value::as_array).map_or(0, Vec::len) > 200
+        || normalized.get("sectors").and_then(Value::as_array).map_or(0, Vec::len) > 200
     {
-        return Err(client_validation_error(
-            "situations.watch tickers and sectors allow at most 200 values",
-        ));
+        return Err(client_validation_error("situations.watch tickers and sectors allow at most 200 values"));
     }
     Ok(Value::Object(normalized))
 }
@@ -368,10 +346,7 @@ fn page_items(page: &Value) -> Result<Vec<Value>, PageIteratorError> {
         };
         let Some(items) = value.as_array() else {
             return Err(PageIteratorError::Pagination {
-                message: format!(
-                    "pagination field {key:?} is {}, want array",
-                    json_type_name(value)
-                ),
+                message: format!("pagination field {key:?} is {}, want array", json_type_name(value)),
             });
         };
         return Ok(items.clone());
@@ -414,40 +389,20 @@ impl ResolveEntityRequest {
         self
     }
 
-    pub fn ticker(self, value: impl Into<String>) -> Self {
-        self.param("ticker", value)
-    }
-    pub fn cik(self, value: impl Into<String>) -> Self {
-        self.param("cik", value)
-    }
-    pub fn figi(self, value: impl Into<String>) -> Self {
-        self.param("figi", value)
-    }
-    pub fn composite_figi(self, value: impl Into<String>) -> Self {
-        self.param("composite_figi", value)
-    }
-    pub fn share_class_figi(self, value: impl Into<String>) -> Self {
-        self.param("share_class_figi", value)
-    }
-    pub fn isin(self, value: impl Into<String>) -> Self {
-        self.param("isin", value)
-    }
-    pub fn cusip(self, value: impl Into<String>) -> Self {
-        self.param("cusip", value)
-    }
-    pub fn name(self, value: impl Into<String>) -> Self {
-        self.param("name", value)
-    }
-    pub fn view(self, value: ResponseView) -> Self {
-        self.param("view", value.as_str())
-    }
+    pub fn ticker(self, value: impl Into<String>) -> Self { self.param("ticker", value) }
+    pub fn cik(self, value: impl Into<String>) -> Self { self.param("cik", value) }
+    pub fn figi(self, value: impl Into<String>) -> Self { self.param("figi", value) }
+    pub fn composite_figi(self, value: impl Into<String>) -> Self { self.param("composite_figi", value) }
+    pub fn share_class_figi(self, value: impl Into<String>) -> Self { self.param("share_class_figi", value) }
+    pub fn isin(self, value: impl Into<String>) -> Self { self.param("isin", value) }
+    pub fn cusip(self, value: impl Into<String>) -> Self { self.param("cusip", value) }
+    pub fn name(self, value: impl Into<String>) -> Self { self.param("name", value) }
+    pub fn view(self, value: ResponseView) -> Self { self.param("view", value.as_str()) }
     pub fn extra(self, key: impl Into<String>, value: impl Into<String>) -> Self {
         let key = key.into();
         self.param(&key, value)
     }
-    pub fn params(&self) -> QueryParams {
-        self.params.clone()
-    }
+    pub fn params(&self) -> QueryParams { self.params.clone() }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -465,40 +420,20 @@ impl LatestFilingRequest {
         self
     }
 
-    pub fn ticker(self, value: impl Into<String>) -> Self {
-        self.param("ticker", value)
-    }
-    pub fn cik(self, value: impl Into<String>) -> Self {
-        self.param("cik", value)
-    }
-    pub fn form(self, value: impl Into<String>) -> Self {
-        self.param("form", value)
-    }
-    pub fn fp(self, value: impl Into<String>) -> Self {
-        self.param("fp", value)
-    }
-    pub fn quarter(self, value: impl Into<String>) -> Self {
-        self.param("quarter", value)
-    }
-    pub fn filing_year(self, value: impl Into<String>) -> Self {
-        self.param("filing_year", value)
-    }
-    pub fn fy(self, value: impl Into<String>) -> Self {
-        self.param("fy", value)
-    }
-    pub fn year(self, value: impl Into<String>) -> Self {
-        self.param("year", value)
-    }
-    pub fn view(self, value: ResponseView) -> Self {
-        self.param("view", value.as_str())
-    }
+    pub fn ticker(self, value: impl Into<String>) -> Self { self.param("ticker", value) }
+    pub fn cik(self, value: impl Into<String>) -> Self { self.param("cik", value) }
+    pub fn form(self, value: impl Into<String>) -> Self { self.param("form", value) }
+    pub fn fp(self, value: impl Into<String>) -> Self { self.param("fp", value) }
+    pub fn quarter(self, value: impl Into<String>) -> Self { self.param("quarter", value) }
+    pub fn filing_year(self, value: impl Into<String>) -> Self { self.param("filing_year", value) }
+    pub fn fy(self, value: impl Into<String>) -> Self { self.param("fy", value) }
+    pub fn year(self, value: impl Into<String>) -> Self { self.param("year", value) }
+    pub fn view(self, value: ResponseView) -> Self { self.param("view", value.as_str()) }
     pub fn extra(self, key: impl Into<String>, value: impl Into<String>) -> Self {
         let key = key.into();
         self.param(&key, value)
     }
-    pub fn params(&self) -> QueryParams {
-        self.params.clone()
-    }
+    pub fn params(&self) -> QueryParams { self.params.clone() }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -520,43 +455,21 @@ impl LatestSectionRequest {
         self
     }
 
-    pub fn section_key(&self) -> &str {
-        &self.section_key
-    }
-    pub fn ticker(self, value: impl Into<String>) -> Self {
-        self.param("ticker", value)
-    }
-    pub fn cik(self, value: impl Into<String>) -> Self {
-        self.param("cik", value)
-    }
-    pub fn form(self, value: impl Into<String>) -> Self {
-        self.param("form", value)
-    }
-    pub fn fp(self, value: impl Into<String>) -> Self {
-        self.param("fp", value)
-    }
-    pub fn quarter(self, value: impl Into<String>) -> Self {
-        self.param("quarter", value)
-    }
-    pub fn filing_year(self, value: impl Into<String>) -> Self {
-        self.param("filing_year", value)
-    }
-    pub fn fy(self, value: impl Into<String>) -> Self {
-        self.param("fy", value)
-    }
-    pub fn year(self, value: impl Into<String>) -> Self {
-        self.param("year", value)
-    }
-    pub fn mode(self, value: impl Into<String>) -> Self {
-        self.param("mode", value)
-    }
+    pub fn section_key(&self) -> &str { &self.section_key }
+    pub fn ticker(self, value: impl Into<String>) -> Self { self.param("ticker", value) }
+    pub fn cik(self, value: impl Into<String>) -> Self { self.param("cik", value) }
+    pub fn form(self, value: impl Into<String>) -> Self { self.param("form", value) }
+    pub fn fp(self, value: impl Into<String>) -> Self { self.param("fp", value) }
+    pub fn quarter(self, value: impl Into<String>) -> Self { self.param("quarter", value) }
+    pub fn filing_year(self, value: impl Into<String>) -> Self { self.param("filing_year", value) }
+    pub fn fy(self, value: impl Into<String>) -> Self { self.param("fy", value) }
+    pub fn year(self, value: impl Into<String>) -> Self { self.param("year", value) }
+    pub fn mode(self, value: impl Into<String>) -> Self { self.param("mode", value) }
     pub fn extra(self, key: impl Into<String>, value: impl Into<String>) -> Self {
         let key = key.into();
         self.param(&key, value)
     }
-    pub fn params(&self) -> QueryParams {
-        self.params.clone()
-    }
+    pub fn params(&self) -> QueryParams { self.params.clone() }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -574,43 +487,21 @@ impl SemanticSearchRequest {
         self
     }
 
-    pub fn query(self, value: impl Into<String>) -> Self {
-        self.param("q", value)
-    }
-    pub fn ticker(self, value: impl Into<String>) -> Self {
-        self.param("ticker", value)
-    }
-    pub fn cik(self, value: impl Into<String>) -> Self {
-        self.param("cik", value)
-    }
-    pub fn form(self, value: impl Into<String>) -> Self {
-        self.param("form", value)
-    }
-    pub fn filing_year(self, value: impl Into<String>) -> Self {
-        self.param("filing_year", value)
-    }
-    pub fn fy(self, value: impl Into<String>) -> Self {
-        self.param("fy", value)
-    }
-    pub fn year(self, value: impl Into<String>) -> Self {
-        self.param("year", value)
-    }
-    pub fn mode(self, value: SemanticSearchMode) -> Self {
-        self.param("mode", value.as_str())
-    }
-    pub fn limit(self, value: impl Into<String>) -> Self {
-        self.param("limit", value)
-    }
-    pub fn view(self, value: ResponseView) -> Self {
-        self.param("view", value.as_str())
-    }
+    pub fn query(self, value: impl Into<String>) -> Self { self.param("q", value) }
+    pub fn ticker(self, value: impl Into<String>) -> Self { self.param("ticker", value) }
+    pub fn cik(self, value: impl Into<String>) -> Self { self.param("cik", value) }
+    pub fn form(self, value: impl Into<String>) -> Self { self.param("form", value) }
+    pub fn filing_year(self, value: impl Into<String>) -> Self { self.param("filing_year", value) }
+    pub fn fy(self, value: impl Into<String>) -> Self { self.param("fy", value) }
+    pub fn year(self, value: impl Into<String>) -> Self { self.param("year", value) }
+    pub fn mode(self, value: SemanticSearchMode) -> Self { self.param("mode", value.as_str()) }
+    pub fn limit(self, value: impl Into<String>) -> Self { self.param("limit", value) }
+    pub fn view(self, value: ResponseView) -> Self { self.param("view", value.as_str()) }
     pub fn extra(self, key: impl Into<String>, value: impl Into<String>) -> Self {
         let key = key.into();
         self.param(&key, value)
     }
-    pub fn params(&self) -> QueryParams {
-        self.params.clone()
-    }
+    pub fn params(&self) -> QueryParams { self.params.clone() }
 }
 
 /// Retry settings for safe read requests.
@@ -707,12 +598,7 @@ pub struct PageIterator<'a> {
 }
 
 impl<'a> PageIterator<'a> {
-    fn new(
-        client: &'a SecApiClient,
-        path: impl Into<String>,
-        params: &[(&str, &str)],
-        options: PaginationOptions,
-    ) -> Self {
+    fn new(client: &'a SecApiClient, path: impl Into<String>, params: &[(&str, &str)], options: PaginationOptions) -> Self {
         let params = query_params_from_pairs(params);
         let path = path.into();
         let path = if path.starts_with('/') {
@@ -824,10 +710,7 @@ impl fmt::Display for SecApiError {
         match self {
             Self::Request(e) => write!(f, "HTTP client error: {e}"),
             Self::InvalidApiKeyHeader => {
-                write!(
-                    f,
-                    "Auth credential contains characters that cannot be sent in a request header"
-                )
+                write!(f, "Auth credential contains characters that cannot be sent in a request header")
             }
             Self::JsonDecode(e) => write!(f, "invalid JSON response: {e}"),
             Self::Api { status, body } => {
@@ -881,19 +764,21 @@ impl SecApiError {
 
     pub fn code(&self) -> Option<&str> {
         match self {
-            Self::Api { body, .. } => json_string_field(body, &["code", "errorCode", "error_code"])
-                .or_else(|| {
-                    nested_error_string_field(body, &["code", "errorCode", "error_code", "type"])
-                }),
+            Self::Api { body, .. } => {
+                json_string_field(body, &["code", "errorCode", "error_code"])
+                    .or_else(|| nested_error_string_field(body, &["code", "errorCode", "error_code", "type"]))
+            }
             _ => None,
         }
     }
 
     pub fn message(&self) -> Option<&str> {
         match self {
-            Self::Api { body, .. } => json_string_field(body, &["message", "detail", "title"])
-                .or_else(|| nested_error_string_field(body, &["message", "detail", "title"]))
-                .or_else(|| body.get("error").and_then(Value::as_str)),
+            Self::Api { body, .. } => {
+                json_string_field(body, &["message", "detail", "title"])
+                    .or_else(|| nested_error_string_field(body, &["message", "detail", "title"]))
+                    .or_else(|| body.get("error").and_then(Value::as_str))
+            }
             _ => None,
         }
     }
@@ -974,8 +859,7 @@ fn json_string_field<'a>(body: &'a Value, keys: &[&str]) -> Option<&'a str> {
 }
 
 fn nested_error_string_field<'a>(body: &'a Value, keys: &[&str]) -> Option<&'a str> {
-    body.get("error")
-        .and_then(|error| json_string_field(error, keys))
+    body.get("error").and_then(|error| json_string_field(error, keys))
 }
 
 fn default_http_client() -> reqwest::Client {
@@ -998,10 +882,7 @@ fn retry_after_delay(value: Option<&HeaderValue>) -> Option<Duration> {
         return Some(Duration::from_secs(seconds));
     }
     let when = httpdate::parse_http_date(value).ok()?;
-    Some(
-        when.duration_since(SystemTime::now())
-            .unwrap_or(Duration::ZERO),
-    )
+    Some(when.duration_since(SystemTime::now()).unwrap_or(Duration::ZERO))
 }
 
 fn clamp_delay(delay: Duration, max_backoff: Duration) -> Duration {
@@ -1017,10 +898,7 @@ fn retry_delay(attempt: usize, config: RetryConfig, retry_after: Option<&HeaderV
         return clamp_delay(delay, config.max_backoff);
     }
     let multiplier = 1_u32.checked_shl(attempt as u32).unwrap_or(u32::MAX);
-    clamp_delay(
-        config.initial_backoff.saturating_mul(multiplier),
-        config.max_backoff,
-    )
+    clamp_delay(config.initial_backoff.saturating_mul(multiplier), config.max_backoff)
 }
 
 pub struct SecApiClient {
@@ -1061,6 +939,11 @@ impl SecApiClient {
         self.bearer_token = Some(bearer_token.into())
             .filter(|value| !value.trim().is_empty())
             .map(|value| value.trim().to_string());
+        self
+    }
+
+    pub fn without_api_key(mut self) -> Self {
+        self.api_key = None;
         self
     }
 
@@ -1115,8 +998,9 @@ impl SecApiClient {
         headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
         headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
         headers.insert(USER_AGENT, HeaderValue::from_static(SDK_USER_AGENT));
-        let version_header = HeaderValue::from_str(&self.api_version)
-            .unwrap_or_else(|_| HeaderValue::from_static(DEFAULT_API_VERSION));
+        let version_header = HeaderValue::from_str(&self.api_version).unwrap_or_else(|_| {
+            HeaderValue::from_static(DEFAULT_API_VERSION)
+        });
         headers.insert("secapi-version", version_header);
         if let Some(bearer_token) = &self.bearer_token {
             let value = HeaderValue::from_str(&format!("Bearer {bearer_token}"))
@@ -1124,8 +1008,7 @@ impl SecApiClient {
             headers.insert(AUTHORIZATION, value);
         }
         if let Some(api_key) = &self.api_key {
-            let value =
-                HeaderValue::from_str(api_key).map_err(|_| SecApiError::InvalidApiKeyHeader)?;
+            let value = HeaderValue::from_str(api_key).map_err(|_| SecApiError::InvalidApiKeyHeader)?;
             headers.insert("x-api-key", value);
         }
         Ok(headers)
@@ -1147,12 +1030,7 @@ impl SecApiClient {
                     if is_retryable_status(status) && attempt < self.retry_config.max_retries {
                         let retry_after = response.headers().get(RETRY_AFTER).cloned();
                         drop(response);
-                        tokio::time::sleep(retry_delay(
-                            attempt,
-                            self.retry_config,
-                            retry_after.as_ref(),
-                        ))
-                        .await;
+                        tokio::time::sleep(retry_delay(attempt, self.retry_config, retry_after.as_ref())).await;
                         continue;
                     }
                     let request_id = response_request_id(response.headers());
@@ -1190,12 +1068,7 @@ impl SecApiClient {
                     if is_retryable_status(status) && attempt < self.retry_config.max_retries {
                         let retry_after = response.headers().get(RETRY_AFTER).cloned();
                         drop(response);
-                        tokio::time::sleep(retry_delay(
-                            attempt,
-                            self.retry_config,
-                            retry_after.as_ref(),
-                        ))
-                        .await;
+                        tokio::time::sleep(retry_delay(attempt, self.retry_config, retry_after.as_ref())).await;
                         continue;
                     }
                     let request_id = response_request_id(response.headers());
@@ -1229,10 +1102,7 @@ impl SecApiClient {
         self.get("/v1/entities/resolve", params).await
     }
 
-    pub async fn resolve_entity_with(
-        &self,
-        request: &ResolveEntityRequest,
-    ) -> Result<Value, SecApiError> {
+    pub async fn resolve_entity_with(&self, request: &ResolveEntityRequest) -> Result<Value, SecApiError> {
         let params = request.params();
         let pairs = params.as_pairs();
         self.resolve_entity(&pairs).await
@@ -1250,12 +1120,7 @@ impl SecApiClient {
         self.get("/v1/sections/search", params).await
     }
 
-    pub fn paginate(
-        &self,
-        path: impl Into<String>,
-        params: &[(&str, &str)],
-        options: PaginationOptions,
-    ) -> PageIterator<'_> {
+    pub fn paginate(&self, path: impl Into<String>, params: &[(&str, &str)], options: PaginationOptions) -> PageIterator<'_> {
         PageIterator::new(self, path, params, options)
     }
 
@@ -1263,11 +1128,7 @@ impl SecApiClient {
         self.paginate_entities_with_options(params, PaginationOptions::default())
     }
 
-    pub fn paginate_entities_with_options(
-        &self,
-        params: &[(&str, &str)],
-        options: PaginationOptions,
-    ) -> PageIterator<'_> {
+    pub fn paginate_entities_with_options(&self, params: &[(&str, &str)], options: PaginationOptions) -> PageIterator<'_> {
         self.paginate("/v1/entities", params, options)
     }
 
@@ -1275,11 +1136,7 @@ impl SecApiClient {
         self.paginate_filings_with_options(params, PaginationOptions::default())
     }
 
-    pub fn paginate_filings_with_options(
-        &self,
-        params: &[(&str, &str)],
-        options: PaginationOptions,
-    ) -> PageIterator<'_> {
+    pub fn paginate_filings_with_options(&self, params: &[(&str, &str)], options: PaginationOptions) -> PageIterator<'_> {
         self.paginate("/v1/filings", params, options)
     }
 
@@ -1287,11 +1144,7 @@ impl SecApiClient {
         self.paginate_sections_with_options(params, PaginationOptions::default())
     }
 
-    pub fn paginate_sections_with_options(
-        &self,
-        params: &[(&str, &str)],
-        options: PaginationOptions,
-    ) -> PageIterator<'_> {
+    pub fn paginate_sections_with_options(&self, params: &[(&str, &str)], options: PaginationOptions) -> PageIterator<'_> {
         self.paginate("/v1/sections/search", params, options)
     }
 
@@ -1303,10 +1156,7 @@ impl SecApiClient {
         self.get("/v1/search/semantic", params).await
     }
 
-    pub async fn semantic_search_with(
-        &self,
-        request: &SemanticSearchRequest,
-    ) -> Result<Value, SecApiError> {
+    pub async fn semantic_search_with(&self, request: &SemanticSearchRequest) -> Result<Value, SecApiError> {
         let params = request.params();
         let pairs = params.as_pairs();
         self.semantic_search(&pairs).await
@@ -1316,49 +1166,24 @@ impl SecApiClient {
         self.get("/v1/filings/latest", params).await
     }
 
-    pub async fn latest_filing_with(
-        &self,
-        request: &LatestFilingRequest,
-    ) -> Result<Value, SecApiError> {
+    pub async fn latest_filing_with(&self, request: &LatestFilingRequest) -> Result<Value, SecApiError> {
         let params = request.params();
         let pairs = params.as_pairs();
         self.latest_filing(&pairs).await
     }
 
-    pub async fn latest_section(
-        &self,
-        section_key: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.get(
-            &format!(
-                "/v1/filings/latest/sections/{}",
-                urlencoding::encode(section_key)
-            ),
-            params,
-        )
-        .await
+    pub async fn latest_section(&self, section_key: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/filings/latest/sections/{}", urlencoding::encode(section_key)), params).await
     }
 
-    pub async fn latest_section_with(
-        &self,
-        request: &LatestSectionRequest,
-    ) -> Result<Value, SecApiError> {
+    pub async fn latest_section_with(&self, request: &LatestSectionRequest) -> Result<Value, SecApiError> {
         let params = request.params();
         let pairs = params.as_pairs();
         self.latest_section(request.section_key(), &pairs).await
     }
 
-    pub async fn filing_by_accession(
-        &self,
-        accession_number: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.get(
-            &format!("/v1/filings/{}", urlencoding::encode(accession_number)),
-            params,
-        )
-        .await
+    pub async fn filing_by_accession(&self, accession_number: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/filings/{}", urlencoding::encode(accession_number)), params).await
     }
 
     pub async fn filing_section_by_accession(
@@ -1374,32 +1199,22 @@ impl SecApiClient {
                 urlencoding::encode(section_key),
             ),
             params,
-        )
-        .await
+        ).await
     }
 
     pub async fn all_statements(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/statements/all", params).await
     }
 
-    pub async fn company_income_statements(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn company_income_statements(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/companies/income-statements", params).await
     }
 
-    pub async fn company_balance_sheets(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn company_balance_sheets(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/companies/balance-sheets", params).await
     }
 
-    pub async fn company_cash_flow_statements(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn company_cash_flow_statements(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/companies/cash-flow-statements", params).await
     }
 
@@ -1423,6 +1238,11 @@ impl SecApiClient {
         self.get("/v1/offerings", params).await
     }
 
+    // Public market data plane. These five routes are contract-gated public
+    // surface in services/datastream-api/src/lib/api-surface-registry.ts and are
+    // present in the published public OpenAPI. Market routes registered with
+    // internal-token or operator access deliberately have NO client method here —
+    // see docs/operations/sdk-mirror-publish-triage.md.
     pub async fn market_calendar(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/market/calendar", params).await
     }
@@ -1435,15 +1255,53 @@ impl SecApiClient {
         self.get("/v1/market/bars", params).await
     }
 
-    pub async fn market_corporate_actions(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn market_corporate_actions(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/market/corporate-actions", params).await
     }
 
     pub async fn market_reference(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/market/reference", params).await
+    }
+
+    // Saved-search monitors. Public surface (`docs: "public"` in
+    // api-surface-registry.ts, present in the public OpenAPI) that the JS and
+    // Python SDKs already expose; this port closes the Rust-only gap. Distinct
+    // from `create_situation_watchlist`, which posts to the situations-scoped
+    // /v1/situations/watchlists route.
+    pub async fn create_monitor(&self, body: &Value) -> Result<Value, SecApiError> {
+        self.post_json("/v1/monitors", body).await
+    }
+
+    pub async fn list_monitors(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/monitors", params).await
+    }
+
+    pub async fn get_monitor(&self, monitor_id: &str) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/monitors/{}", urlencoding::encode(monitor_id)), &[]).await
+    }
+
+    pub async fn monitor_matches(&self, monitor_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/monitors/{}/matches", urlencoding::encode(monitor_id)), params).await
+    }
+
+    pub async fn update_monitor_delivery(&self, monitor_id: &str, body: &Value) -> Result<Value, SecApiError> {
+        self.post_json(&format!("/v1/monitors/{}/delivery", urlencoding::encode(monitor_id)), body).await
+    }
+
+    pub async fn delete_monitor(&self, monitor_id: &str) -> Result<(), SecApiError> {
+        let url = format!(
+            "{}/v1/monitors/{}",
+            self.base_url.trim_end_matches('/'),
+            urlencoding::encode(monitor_id)
+        );
+        let response = self.http.delete(url).headers(self.headers()?).send().await?;
+        let status = response.status().as_u16();
+        if (200..300).contains(&status) {
+            return Ok(());
+        }
+        let request_id = response_request_id(response.headers());
+        let text = response.text().await?;
+        Err(api_error(status, text, request_id))
     }
 
     pub async fn news_stories(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
@@ -1454,55 +1312,58 @@ impl SecApiClient {
         self.get("/v1/situations", params).await
     }
 
-    pub async fn get_situation(
-        &self,
-        situation_id: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.get(
-            &format!("/v1/situations/{}", urlencoding::encode(situation_id)),
-            params,
-        )
-        .await
+    pub async fn list_situations_with(&self, request: &SituationListRequest) -> Result<Value, SecApiError> {
+        let params = request.params();
+        self.list_situations(&params.as_pairs()).await
     }
 
-    pub async fn situations_by_form(
-        &self,
-        form: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.get(
-            &format!("/v1/situations/by-form/{}", urlencoding::encode(form)),
-            params,
-        )
-        .await
+    pub async fn get_situation(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/situations/{}", urlencoding::encode(situation_id)), params).await
+    }
+
+    pub async fn get_situation_with(&self, situation_id: &str, request: &SituationMemberRequest) -> Result<Value, SecApiError> {
+        let params = request.params();
+        self.get_situation(situation_id, &params.as_pairs()).await
+    }
+
+    pub async fn situations_by_form(&self, form: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/situations/by-form/{}", urlencoding::encode(form)), params).await
+    }
+
+    pub async fn situations_by_form_with(&self, form: &str, request: &SituationListRequest) -> Result<Value, SecApiError> {
+        let params = request.params();
+        self.situations_by_form(form, &params.as_pairs()).await
     }
 
     pub async fn situations_feed(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/situations/feed", params).await
     }
 
-    pub async fn situations_feed_rss(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<String, SecApiError> {
+    pub async fn situations_feed_with(&self, request: &SituationFeedRequest) -> Result<Value, SecApiError> {
+        let params = request.params();
+        self.situations_feed(&params.as_pairs()).await
+    }
+
+    pub async fn situations_feed_rss(&self, params: &[(&str, &str)]) -> Result<String, SecApiError> {
         self.get_text("/v1/situations/feed.rss", params).await
+    }
+
+    pub async fn situations_feed_rss_with(&self, request: &SituationFeedRssRequest) -> Result<String, SecApiError> {
+        let params = request.params();
+        self.situations_feed_rss(&params.as_pairs()).await
     }
 
     pub async fn situations_issues(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/situations/issues", params).await
     }
 
-    pub async fn situation_issue(
-        &self,
-        issue: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.get(
-            &format!("/v1/situations/issues/{}", urlencoding::encode(issue)),
-            params,
-        )
-        .await
+    pub async fn situations_issues_with(&self, request: &SituationIssueListRequest) -> Result<Value, SecApiError> {
+        let params = request.params();
+        self.situations_issues(&params.as_pairs()).await
+    }
+
+    pub async fn situation_issue(&self, issue: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/situations/issues/{}", urlencoding::encode(issue)), params).await
     }
 
     pub async fn situations_calendar(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
@@ -1513,77 +1374,43 @@ impl SecApiClient {
         self.get("/v1/situations/stats", params).await
     }
 
-    pub async fn situations_performance(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn situations_performance(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/situations/performance", params).await
     }
 
-    pub async fn situation_filings(
-        &self,
-        situation_id: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.get(
-            &format!(
-                "/v1/situations/{}/filings",
-                urlencoding::encode(situation_id)
-            ),
-            params,
-        )
-        .await
+    pub async fn situation_filings(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/situations/{}/filings", urlencoding::encode(situation_id)), params).await
     }
 
-    pub async fn situation_summary(
-        &self,
-        situation_id: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.get(
-            &format!(
-                "/v1/situations/{}/summary",
-                urlencoding::encode(situation_id)
-            ),
-            params,
-        )
-        .await
+    pub async fn situation_filings_with(&self, situation_id: &str, request: &SituationMemberRequest) -> Result<Value, SecApiError> {
+        let params = request.params();
+        self.situation_filings(situation_id, &params.as_pairs()).await
     }
 
-    pub async fn export_situation(
-        &self,
-        situation_id: &str,
-        params: &[(&str, &str)],
-    ) -> Result<String, SecApiError> {
-        self.get_text(
-            &format!(
-                "/v1/situations/{}/export",
-                urlencoding::encode(situation_id)
-            ),
-            params,
-        )
-        .await
+    pub async fn situation_summary(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/situations/{}/summary", urlencoding::encode(situation_id)), params).await
     }
 
-    pub async fn underwrite_situation(
-        &self,
-        situation_id: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.get(
-            &format!(
-                "/v1/situations/{}/underwriting-pack",
-                urlencoding::encode(situation_id)
-            ),
-            params,
-        )
-        .await
+    pub async fn export_situation(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<String, SecApiError> {
+        self.get_text(&format!("/v1/situations/{}/export", urlencoding::encode(situation_id)), params).await
     }
 
-    pub async fn watch_situations(
+    pub async fn underwrite_situation(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/situations/{}/underwriting-pack", urlencoding::encode(situation_id)), params).await
+    }
+
+    pub async fn list_situation_watchlists(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/situations/watchlists", params).await
+    }
+
+    pub async fn get_situation_watchlist(&self, monitor_id: &str) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/situations/watchlists/{}", urlencoding::encode(monitor_id)), &[]).await
+    }
+
+    pub async fn create_situation_watchlist(
         &self,
         filters: &Value,
-        delivery: SituationWatchDelivery,
+        delivery: Option<SituationWatchDelivery>,
         name: Option<&str>,
         start_at: Option<&str>,
     ) -> Result<Value, SecApiError> {
@@ -1597,43 +1424,83 @@ impl SecApiClient {
             "query": "situations.watch",
             "searchMode": "situation",
             "filters": normalized_filters,
-            "delivery": delivery.into_json()?,
         });
+        if let Some(delivery) = delivery {
+            self.require_bearer_only_situation_delivery()?;
+            body["delivery"] = delivery.into_json()?;
+        }
         if let Some(start_at) = start_at.map(str::trim).filter(|value| !value.is_empty()) {
             body["startAt"] = Value::String(start_at.to_string());
         }
-        self.post_json("/v1/monitors", &body).await
+        self.post_json("/v1/situations/watchlists", &body).await
+    }
+
+    pub async fn delete_situation_watchlist(&self, monitor_id: &str) -> Result<(), SecApiError> {
+        let url = format!(
+            "{}/v1/situations/watchlists/{}",
+            self.base_url.trim_end_matches('/'),
+            urlencoding::encode(monitor_id)
+        );
+        let response = self.http.delete(url).headers(self.headers()?).send().await?;
+        let status = response.status().as_u16();
+        if (200..300).contains(&status) {
+            return Ok(());
+        }
+        let request_id = response_request_id(response.headers());
+        let text = response.text().await?;
+        Err(api_error(status, text, request_id))
+    }
+
+    fn require_bearer_only_situation_delivery(&self) -> Result<(), SecApiError> {
+        if self.bearer_token.is_none() || self.api_key.is_some() {
+            return Err(client_validation_error("situations.watch delivery activation requires a bearer-authenticated client without an API key"));
+        }
+        Ok(())
+    }
+
+    pub async fn watch_situations<D>(
+        &self,
+        filters: &Value,
+        delivery: D,
+        name: Option<&str>,
+        start_at: Option<&str>,
+    ) -> Result<Value, SecApiError>
+    where
+        D: Into<Option<SituationWatchDelivery>>,
+    {
+        self.create_situation_watchlist(filters, delivery.into(), name, start_at).await
     }
 
     pub async fn embed_situations(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/embed/situations", params).await
     }
 
-    pub async fn embed_situation(
-        &self,
-        situation_id: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.get(
-            &format!("/v1/embed/situations/{}", urlencoding::encode(situation_id)),
-            params,
-        )
-        .await
+    pub async fn embed_situations_feed(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/embed/situations/feed", params).await
     }
 
-    pub async fn embed_situation_issues(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn embed_situations_feed_rss(&self, params: &[(&str, &str)]) -> Result<String, SecApiError> {
+        self.get_text("/v1/embed/situations/feed.rss", params).await
+    }
+
+    pub async fn embed_situations_stats(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/embed/situations/stats", params).await
+    }
+
+    pub async fn embed_situation(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/embed/situations/{}", urlencoding::encode(situation_id)), params).await
+    }
+
+    pub async fn embed_situation_export(&self, situation_id: &str, params: &[(&str, &str)]) -> Result<String, SecApiError> {
+        self.get_text(&format!("/v1/embed/situations/{}/export", urlencoding::encode(situation_id)), params).await
+    }
+
+    pub async fn embed_situation_issues(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/embed/situations/issues", params).await
     }
 
     pub async fn embed_situation_issue(&self, issue: &str) -> Result<Value, SecApiError> {
-        self.get(
-            &format!("/v1/embed/situations/issues/{}", urlencoding::encode(issue)),
-            &[],
-        )
-        .await
+        self.get(&format!("/v1/embed/situations/issues/{}", urlencoding::encode(issue)), &[]).await
     }
 
     pub async fn macro_search(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
@@ -1656,10 +1523,7 @@ impl SecApiClient {
         self.get("/v1/macro/forecasts", params).await
     }
 
-    pub async fn macro_high_signal_pack(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn macro_high_signal_pack(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/macro/high-signal-pack", params).await
     }
 
@@ -1667,19 +1531,12 @@ impl SecApiClient {
         self.get("/v1/macro/regimes", params).await
     }
 
-    pub async fn macro_credit_ratings(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn macro_credit_ratings(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/macro/credit-ratings", params).await
     }
 
     pub async fn macro_credit_rating(&self, country: &str) -> Result<Value, SecApiError> {
-        self.get(
-            &format!("/v1/macro/credit-ratings/{}", urlencoding::encode(country)),
-            &[],
-        )
-        .await
+        self.get(&format!("/v1/macro/credit-ratings/{}", urlencoding::encode(country)), &[]).await
     }
 
     pub async fn factor_catalog(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
@@ -1690,26 +1547,15 @@ impl SecApiClient {
         self.get("/v1/factors/returns", params).await
     }
 
-    pub async fn factor_history(
-        &self,
-        factor_key: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.get(
-            &format!("/v1/factors/history/{}", urlencoding::encode(factor_key)),
-            params,
-        )
-        .await
+    pub async fn factor_history(&self, factor_key: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/factors/history/{}", urlencoding::encode(factor_key)), params).await
     }
 
     pub async fn factor_sparklines(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/factors/sparklines", params).await
     }
 
-    pub async fn factor_returns_intraday(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn factor_returns_intraday(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/factors/returns/intraday", params).await
     }
 
@@ -1717,10 +1563,7 @@ impl SecApiClient {
         self.get("/v1/factors/dashboard", params).await
     }
 
-    pub async fn factor_regime_performance(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn factor_regime_performance(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/factors/regime-performance", params).await
     }
 
@@ -1728,53 +1571,27 @@ impl SecApiClient {
         self.get("/v1/factors/correlations", params).await
     }
 
-    pub async fn factor_extreme_moves(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn factor_extreme_moves(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/factors/extreme-moves", params).await
     }
 
-    pub async fn factor_extreme_pairs(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn factor_extreme_pairs(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/factors/extreme-pairs", params).await
-    }
-
-    pub async fn factor_valuations(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
-        self.get("/v1/factors/valuations", params).await
-    }
-
-    pub async fn factor_valuation_stocks(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.get("/v1/factors/valuations/stocks", params).await
     }
 
     pub async fn factor_exposures(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/factors/exposures", params).await
     }
 
-    pub async fn factor_decomposition(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn factor_decomposition(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/factors/decomposition", params).await
     }
 
-    pub async fn factor_related_stocks(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn factor_related_stocks(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/factors/related-stocks", params).await
     }
 
-    pub async fn factor_similarity_pack(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn factor_similarity_pack(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/factors/similarity-pack", params).await
     }
 
@@ -1782,12 +1599,7 @@ impl SecApiClient {
         self.get("/v1/factors/pairs", params).await
     }
 
-    pub async fn factor_pair_history(
-        &self,
-        f1: &str,
-        f2: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn factor_pair_history(&self, f1: &str, f2: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get(
             &format!(
                 "/v1/factors/pair-history/{}/{}",
@@ -1795,14 +1607,10 @@ impl SecApiClient {
                 urlencoding::encode(f2),
             ),
             params,
-        )
-        .await
+        ).await
     }
 
-    pub async fn factor_bulk_download(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn factor_bulk_download(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/factors/bulk-download", params).await
     }
 
@@ -1810,137 +1618,80 @@ impl SecApiClient {
         self.factor_custom_with_params(body, &[]).await
     }
 
-    pub async fn factor_custom_with_params(
-        &self,
-        body: &Value,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.post_json_with_params("/v1/factors/custom", body, params)
-            .await
+    pub async fn factor_custom_with_params(&self, body: &Value, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.post_json_with_params("/v1/factors/custom", body, params).await
     }
 
-    pub async fn stock_loadings(
-        &self,
-        ticker: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.get(
-            &format!("/v1/stocks/{}/loadings", urlencoding::encode(ticker)),
-            params,
-        )
-        .await
+    pub async fn stock_loadings(&self, ticker: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/stocks/{}/loadings", urlencoding::encode(ticker)), params).await
     }
 
     pub async fn portfolio_analyze(&self, body: &Value) -> Result<Value, SecApiError> {
         self.portfolio_analyze_with_params(body, &[]).await
     }
 
-    pub async fn portfolio_analyze_with_params(
-        &self,
-        body: &Value,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.post_json_with_params("/v1/portfolio/analyze", body, params)
-            .await
+    pub async fn portfolio_analyze_with_params(&self, body: &Value, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.post_json_with_params("/v1/portfolio/analyze", body, params).await
     }
 
     pub async fn portfolio_attribution(&self, body: &Value) -> Result<Value, SecApiError> {
         self.portfolio_attribution_with_params(body, &[]).await
     }
 
-    pub async fn portfolio_attribution_with_params(
-        &self,
-        body: &Value,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.post_json_with_params("/v1/portfolio/attribution", body, params)
-            .await
+    pub async fn portfolio_attribution_with_params(&self, body: &Value, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.post_json_with_params("/v1/portfolio/attribution", body, params).await
     }
 
-    pub async fn model_portfolio_factor_view(
-        &self,
-        portfolio_id: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.get(
-            &format!(
-                "/v1/model-portfolios/{}/factor-view",
-                urlencoding::encode(portfolio_id)
-            ),
-            params,
-        )
-        .await
+    pub async fn model_portfolio_factor_view(&self, portfolio_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/model-portfolios/{}/factor-view", urlencoding::encode(portfolio_id)), params).await
     }
 
     pub async fn model_factor_analysis(&self, body: &Value) -> Result<Value, SecApiError> {
         self.model_factor_analysis_with_params(body, &[]).await
     }
 
-    pub async fn model_factor_analysis_with_params(
-        &self,
-        body: &Value,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.post_json_with_params("/v1/models/factor-analysis", body, params)
-            .await
+    pub async fn model_factor_analysis_with_params(&self, body: &Value, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.post_json_with_params("/v1/models/factor-analysis", body, params).await
     }
 
     pub async fn portfolio_optimize(&self, body: &Value) -> Result<Value, SecApiError> {
         self.portfolio_optimize_with_params(body, &[]).await
     }
 
-    pub async fn portfolio_optimize_with_params(
-        &self,
-        body: &Value,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.post_json_with_params("/v1/portfolio/optimize", body, params)
-            .await
+    pub async fn portfolio_optimize_with_params(&self, body: &Value, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.post_json_with_params("/v1/portfolio/optimize", body, params).await
     }
 
     pub async fn portfolio_hedge(&self, body: &Value) -> Result<Value, SecApiError> {
         self.portfolio_hedge_with_params(body, &[]).await
     }
 
-    pub async fn portfolio_hedge_with_params(
-        &self,
-        body: &Value,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.post_json_with_params("/v1/portfolio/hedge", body, params)
-            .await
+    pub async fn portfolio_hedge_with_params(&self, body: &Value, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.post_json_with_params("/v1/portfolio/hedge", body, params).await
     }
 
     pub async fn portfolio_stress_test(&self, body: &Value) -> Result<Value, SecApiError> {
         self.portfolio_stress_test_with_params(body, &[]).await
     }
 
-    pub async fn portfolio_stress_test_with_params(
-        &self,
-        body: &Value,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.post_json_with_params("/v1/portfolio/stress-test", body, params)
-            .await
+    pub async fn portfolio_stress_test_with_params(&self, body: &Value, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.post_json_with_params("/v1/portfolio/stress-test", body, params).await
     }
 
-    pub async fn intelligence_security(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn intelligence_security(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/intelligence/security", params).await
     }
 
-    pub async fn intelligence_company(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn intelligence_company(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/intelligence/company", params).await
     }
 
+    pub async fn intelligence_earnings_preview(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/intelligence/earnings-preview", params).await
+    }
+
     pub async fn intelligence_country_report(&self, body: &Value) -> Result<Value, SecApiError> {
-        self.post_json("/v1/intelligence/country-report", body)
-            .await
+        self.post_json("/v1/intelligence/country-report", body).await
     }
 
     pub async fn intelligence_portfolio(&self, body: &Value) -> Result<Value, SecApiError> {
@@ -1951,20 +1702,12 @@ impl SecApiClient {
         self.post_json("/v1/intelligence/query", body).await
     }
 
-    pub async fn intelligence_earnings_preview(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.get("/v1/intelligence/earnings-preview", params).await
-    }
-
     pub async fn intelligence_watchlist(&self, body: &Value) -> Result<Value, SecApiError> {
         self.post_json("/v1/intelligence/watchlist", body).await
     }
 
     pub async fn intelligence_footnotes_query(&self, body: &Value) -> Result<Value, SecApiError> {
-        self.post_json("/v1/intelligence/footnotes/query", body)
-            .await
+        self.post_json("/v1/intelligence/footnotes/query", body).await
     }
 
     pub async fn volatility_signal(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
@@ -1981,8 +1724,7 @@ impl SecApiClient {
         arguments: &[(&str, Value)],
         id: Option<&str>,
     ) -> Result<Value, SecApiError> {
-        self.post_json("/mcp", &mcp_tool_call_body(tool_name, arguments, id))
-            .await
+        self.post_json("/mcp", &mcp_tool_call_body(tool_name, arguments, id)).await
     }
 
     pub async fn delete_api_key(&self, key_id: &str) -> Result<(), SecApiError> {
@@ -1991,12 +1733,7 @@ impl SecApiClient {
             self.base_url.trim_end_matches('/'),
             urlencoding::encode(key_id)
         );
-        let response = self
-            .http
-            .delete(url)
-            .headers(self.headers()?)
-            .send()
-            .await?;
+        let response = self.http.delete(url).headers(self.headers()?).send().await?;
         let status = response.status().as_u16();
         if (200..300).contains(&status) {
             return Ok(());
@@ -2014,12 +1751,8 @@ impl SecApiClient {
         self.get("/v1/statements/segmented-facts", params).await
     }
 
-    pub async fn pension_benefit_schedule(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.get("/v1/filings/pension-benefit-schedule", params)
-            .await
+    pub async fn pension_benefit_schedule(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/filings/pension-benefit-schedule", params).await
     }
 
     pub async fn share_float(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
@@ -2038,10 +1771,7 @@ impl SecApiClient {
         self.get("/v1/insiders", params).await
     }
 
-    pub async fn beneficial_ownership(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn beneficial_ownership(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/owners/13d-13g", params).await
     }
 
@@ -2053,10 +1783,7 @@ impl SecApiClient {
         self.get("/v1/events/ma", params).await
     }
 
-    pub async fn voting_results_events(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn voting_results_events(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/events/voting-results", params).await
     }
 
@@ -2066,26 +1793,15 @@ impl SecApiClient {
         self.get("/v1/dilution/events", params).await
     }
 
-    pub async fn dilution_event_detail(
-        &self,
-        event_id: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.get(
-            &format!("/v1/dilution/events/{}", urlencoding::encode(event_id)),
-            params,
-        )
-        .await
+    pub async fn dilution_event_detail(&self, event_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get(&format!("/v1/dilution/events/{}", urlencoding::encode(event_id)), params).await
     }
 
     pub async fn dilution_warrants(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/dilution/warrants", params).await
     }
 
-    pub async fn dilution_convertibles(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn dilution_convertibles(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/dilution/convertibles", params).await
     }
 
@@ -2097,24 +1813,15 @@ impl SecApiClient {
         self.get("/v1/dilution/lockups", params).await
     }
 
-    pub async fn dilution_cash_position(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn dilution_cash_position(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/dilution/cash-position", params).await
     }
 
-    pub async fn dilution_corporate_actions(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn dilution_corporate_actions(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/dilution/corporate-actions", params).await
     }
 
-    pub async fn dilution_nasdaq_compliance(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn dilution_nasdaq_compliance(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/dilution/nasdaq-compliance", params).await
     }
 
@@ -2122,10 +1829,7 @@ impl SecApiClient {
         self.get("/v1/dilution/ratings", params).await
     }
 
-    pub async fn dilution_reverse_splits(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn dilution_reverse_splits(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/dilution/reverse-splits", params).await
     }
 
@@ -2134,10 +1838,7 @@ impl SecApiClient {
         self.get("/v1/dilution/score", params).await
     }
 
-    pub async fn dilution_share_float_history(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn dilution_share_float_history(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/dilution/share-float-history", params).await
     }
 
@@ -2149,34 +1850,23 @@ impl SecApiClient {
         self.get("/v1/forms/144", params).await
     }
 
-    pub async fn company_subsidiaries(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn company_subsidiaries(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/companies/subsidiaries", params).await
+    }
+
+    pub async fn earnings_transcripts(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.get("/v1/earnings/transcripts", params).await
     }
 
     pub async fn enforcement_actions(&self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.get("/v1/events/enforcement", params).await
     }
 
-    pub async fn earnings_transcripts(
-        &self,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.get("/v1/earnings/transcripts", params).await
-    }
-
     async fn post_json(&self, path: &str, body: &Value) -> Result<Value, SecApiError> {
         self.post_json_with_params(path, body, &[]).await
     }
 
-    async fn post_json_with_params(
-        &self,
-        path: &str,
-        body: &Value,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    async fn post_json_with_params(&self, path: &str, body: &Value, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         let url = format!("{}{}", self.base_url.trim_end_matches('/'), path);
         for attempt in 0..=self.retry_config.max_retries {
             let response = self
@@ -2191,12 +1881,7 @@ impl SecApiClient {
             if status == 429 && attempt < self.retry_config.max_retries {
                 let retry_after = response.headers().get(RETRY_AFTER).cloned();
                 drop(response);
-                tokio::time::sleep(retry_delay(
-                    attempt,
-                    self.retry_config,
-                    retry_after.as_ref(),
-                ))
-                .await;
+                tokio::time::sleep(retry_delay(attempt, self.retry_config, retry_after.as_ref())).await;
                 continue;
             }
             let request_id = response_request_id(response.headers());
@@ -2232,11 +1917,7 @@ impl<'a> EntityService<'a> {
         self.client.paginate_entities(params)
     }
 
-    pub fn paginate_with_options(
-        self,
-        params: &[(&str, &str)],
-        options: PaginationOptions,
-    ) -> PageIterator<'a> {
+    pub fn paginate_with_options(self, params: &[(&str, &str)], options: PaginationOptions) -> PageIterator<'a> {
         self.client.paginate_entities_with_options(params, options)
     }
 }
@@ -2255,11 +1936,7 @@ impl<'a> FilingService<'a> {
         self.client.paginate_filings(params)
     }
 
-    pub fn paginate_with_options(
-        self,
-        params: &[(&str, &str)],
-        options: PaginationOptions,
-    ) -> PageIterator<'a> {
+    pub fn paginate_with_options(self, params: &[(&str, &str)], options: PaginationOptions) -> PageIterator<'a> {
         self.client.paginate_filings_with_options(params, options)
     }
 
@@ -2271,14 +1948,8 @@ impl<'a> FilingService<'a> {
         self.client.latest_filing_with(request).await
     }
 
-    pub async fn by_accession(
-        self,
-        accession_number: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
-        self.client
-            .filing_by_accession(accession_number, params)
-            .await
+    pub async fn by_accession(self, accession_number: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.filing_by_accession(accession_number, params).await
     }
 }
 
@@ -2296,19 +1967,11 @@ impl<'a> SectionService<'a> {
         self.client.paginate_sections(params)
     }
 
-    pub fn paginate_with_options(
-        self,
-        params: &[(&str, &str)],
-        options: PaginationOptions,
-    ) -> PageIterator<'a> {
+    pub fn paginate_with_options(self, params: &[(&str, &str)], options: PaginationOptions) -> PageIterator<'a> {
         self.client.paginate_sections_with_options(params, options)
     }
 
-    pub async fn latest(
-        self,
-        section_key: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn latest(self, section_key: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.client.latest_section(section_key, params).await
     }
 
@@ -2322,9 +1985,7 @@ impl<'a> SectionService<'a> {
         section_key: &str,
         params: &[(&str, &str)],
     ) -> Result<Value, SecApiError> {
-        self.client
-            .filing_section_by_accession(accession_number, section_key, params)
-            .await
+        self.client.filing_section_by_accession(accession_number, section_key, params).await
     }
 }
 
@@ -2342,10 +2003,7 @@ impl<'a> SearchService<'a> {
         self.client.semantic_search(params).await
     }
 
-    pub async fn semantic_with(
-        self,
-        request: &SemanticSearchRequest,
-    ) -> Result<Value, SecApiError> {
+    pub async fn semantic_with(self, request: &SemanticSearchRequest) -> Result<Value, SecApiError> {
         self.client.semantic_search_with(request).await
     }
 }
@@ -2360,28 +2018,48 @@ impl<'a> SituationService<'a> {
         self.client.list_situations(params).await
     }
 
-    pub async fn get(
-        self,
-        situation_id: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn list_with(self, request: &SituationListRequest) -> Result<Value, SecApiError> {
+        self.client.list_situations_with(request).await
+    }
+
+    pub async fn get(self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.client.get_situation(situation_id, params).await
+    }
+
+    pub async fn get_with(self, situation_id: &str, request: &SituationMemberRequest) -> Result<Value, SecApiError> {
+        self.client.get_situation_with(situation_id, request).await
     }
 
     pub async fn by_form(self, form: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.client.situations_by_form(form, params).await
     }
 
+    pub async fn by_form_with(self, form: &str, request: &SituationListRequest) -> Result<Value, SecApiError> {
+        self.client.situations_by_form_with(form, request).await
+    }
+
     pub async fn feed(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.client.situations_feed(params).await
+    }
+
+    pub async fn feed_with(self, request: &SituationFeedRequest) -> Result<Value, SecApiError> {
+        self.client.situations_feed_with(request).await
     }
 
     pub async fn feed_rss(self, params: &[(&str, &str)]) -> Result<String, SecApiError> {
         self.client.situations_feed_rss(params).await
     }
 
+    pub async fn feed_rss_with(self, request: &SituationFeedRssRequest) -> Result<String, SecApiError> {
+        self.client.situations_feed_rss_with(request).await
+    }
+
     pub async fn issues(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.client.situations_issues(params).await
+    }
+
+    pub async fn issues_with(self, request: &SituationIssueListRequest) -> Result<Value, SecApiError> {
+        self.client.situations_issues_with(request).await
     }
 
     pub async fn issue(self, issue: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
@@ -2400,48 +2078,59 @@ impl<'a> SituationService<'a> {
         self.client.situations_performance(params).await
     }
 
-    pub async fn filings(
-        self,
-        situation_id: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn filings(self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.client.situation_filings(situation_id, params).await
     }
 
-    pub async fn summary(
-        self,
-        situation_id: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn filings_with(self, situation_id: &str, request: &SituationMemberRequest) -> Result<Value, SecApiError> {
+        self.client.situation_filings_with(situation_id, request).await
+    }
+
+    pub async fn summary(self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.client.situation_summary(situation_id, params).await
     }
 
-    pub async fn export(
-        self,
-        situation_id: &str,
-        params: &[(&str, &str)],
-    ) -> Result<String, SecApiError> {
+    pub async fn export(self, situation_id: &str, params: &[(&str, &str)]) -> Result<String, SecApiError> {
         self.client.export_situation(situation_id, params).await
     }
 
-    pub async fn underwrite(
-        self,
-        situation_id: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn underwrite(self, situation_id: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.client.underwrite_situation(situation_id, params).await
     }
 
-    pub async fn watch(
+    pub async fn watch<D>(
         self,
         filters: &Value,
-        delivery: SituationWatchDelivery,
+        delivery: D,
+        name: Option<&str>,
+        start_at: Option<&str>,
+    ) -> Result<Value, SecApiError>
+    where
+        D: Into<Option<SituationWatchDelivery>>,
+    {
+        self.client.watch_situations(filters, delivery, name, start_at).await
+    }
+
+    pub async fn watchlists(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
+        self.client.list_situation_watchlists(params).await
+    }
+
+    pub async fn watchlist(self, monitor_id: &str) -> Result<Value, SecApiError> {
+        self.client.get_situation_watchlist(monitor_id).await
+    }
+
+    pub async fn create_watchlist(
+        self,
+        filters: &Value,
+        delivery: Option<SituationWatchDelivery>,
         name: Option<&str>,
         start_at: Option<&str>,
     ) -> Result<Value, SecApiError> {
-        self.client
-            .watch_situations(filters, delivery, name, start_at)
-            .await
+        self.client.create_situation_watchlist(filters, delivery, name, start_at).await
+    }
+
+    pub async fn delete_watchlist(self, monitor_id: &str) -> Result<(), SecApiError> {
+        self.client.delete_situation_watchlist(monitor_id).await
     }
 }
 
@@ -2459,11 +2148,7 @@ impl<'a> FactorService<'a> {
         self.client.factor_returns(params).await
     }
 
-    pub async fn history(
-        self,
-        factor_key: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn history(self, factor_key: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.client.factor_history(factor_key, params).await
     }
 
@@ -2495,14 +2180,6 @@ impl<'a> FactorService<'a> {
         self.client.factor_extreme_pairs(params).await
     }
 
-    pub async fn valuations(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
-        self.client.factor_valuations(params).await
-    }
-
-    pub async fn valuation_stocks(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
-        self.client.factor_valuation_stocks(params).await
-    }
-
     pub async fn exposures(self, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.client.factor_exposures(params).await
     }
@@ -2523,12 +2200,7 @@ impl<'a> FactorService<'a> {
         self.client.factor_pairs(params).await
     }
 
-    pub async fn pair_history(
-        self,
-        f1: &str,
-        f2: &str,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn pair_history(self, f1: &str, f2: &str, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.client.factor_pair_history(f1, f2, params).await
     }
 
@@ -2540,11 +2212,7 @@ impl<'a> FactorService<'a> {
         self.client.factor_custom(body).await
     }
 
-    pub async fn custom_with_params(
-        self,
-        body: &Value,
-        params: &[(&str, &str)],
-    ) -> Result<Value, SecApiError> {
+    pub async fn custom_with_params(self, body: &Value, params: &[(&str, &str)]) -> Result<Value, SecApiError> {
         self.client.factor_custom_with_params(body, params).await
     }
 }
@@ -2607,9 +2275,7 @@ mod tests {
                     "\r\n",
                     "{\"ok\":true}"
                 );
-                stream
-                    .write_all(response.as_bytes())
-                    .expect("write response");
+                stream.write_all(response.as_bytes()).expect("write response");
             }
         });
 
@@ -2623,19 +2289,14 @@ mod tests {
         let handle = thread::spawn(move || {
             let (mut stream, _) = listener.accept().expect("accept request");
             let mut buffer = [0; 4096];
-            let read = stream.read(&mut buffer).expect("read request");
-            assert!(read > 0, "expected response server request bytes");
-            stream
-                .write_all(response.as_bytes())
-                .expect("write response");
+            stream.read(&mut buffer).expect("read request");
+            stream.write_all(response.as_bytes()).expect("write response");
         });
 
         (base_url, handle)
     }
 
-    fn response_sequence_server(
-        responses: Vec<String>,
-    ) -> (String, Receiver<String>, JoinHandle<()>) {
+    fn response_sequence_server(responses: Vec<String>) -> (String, Receiver<String>, JoinHandle<()>) {
         let listener = TcpListener::bind("127.0.0.1:0").expect("bind response sequence server");
         let base_url = format!("http://{}", listener.local_addr().expect("local addr"));
         let (tx, rx) = mpsc::channel();
@@ -2653,18 +2314,14 @@ mod tests {
                     .expect("request target")
                     .to_string();
                 tx.send(target).expect("send request target");
-                stream
-                    .write_all(response.as_bytes())
-                    .expect("write response");
+                stream.write_all(response.as_bytes()).expect("write response");
             }
         });
 
         (base_url, rx, handle)
     }
 
-    fn raw_response_sequence_server(
-        responses: Vec<String>,
-    ) -> (String, Receiver<String>, JoinHandle<()>) {
+    fn raw_response_sequence_server(responses: Vec<String>) -> (String, Receiver<String>, JoinHandle<()>) {
         let listener = TcpListener::bind("127.0.0.1:0").expect("bind raw response sequence server");
         let base_url = format!("http://{}", listener.local_addr().expect("local addr"));
         let (tx, rx) = mpsc::channel();
@@ -2676,9 +2333,7 @@ mod tests {
                 let read = stream.read(&mut buffer).expect("read request");
                 tx.send(String::from_utf8_lossy(&buffer[..read]).to_string())
                     .expect("send raw request");
-                stream
-                    .write_all(response.as_bytes())
-                    .expect("write response");
+                stream.write_all(response.as_bytes()).expect("write response");
             }
         });
 
@@ -2714,9 +2369,7 @@ mod tests {
                     "\r\n",
                     "{\"ok\":true}"
                 );
-                stream
-                    .write_all(response.as_bytes())
-                    .expect("write response");
+                stream.write_all(response.as_bytes()).expect("write response");
             }
         });
 
@@ -2734,9 +2387,7 @@ mod tests {
             let read = stream.read(&mut buffer).expect("read request");
             tx.send(String::from_utf8_lossy(&buffer[..read]).to_string())
                 .expect("send raw request");
-            stream
-                .write_all(response.as_bytes())
-                .expect("write response");
+            stream.write_all(response.as_bytes()).expect("write response");
         });
 
         (base_url, rx, handle)
@@ -2752,8 +2403,7 @@ mod tests {
                 .set_read_timeout(Some(Duration::from_secs(2)))
                 .expect("set slow server read timeout");
             let mut buffer = [0; 4096];
-            let read = stream.read(&mut buffer).expect("read request");
-            assert!(read > 0, "expected slow server request bytes");
+            stream.read(&mut buffer).expect("read request");
             thread::sleep(delay);
             let response = concat!(
                 "HTTP/1.1 200 OK\r\n",
@@ -2834,10 +2484,7 @@ mod tests {
         std::env::remove_var("SECAPI_BASE_URL");
         std::env::set_var("OMNI_DATASTREAM_API_KEY", "omni_fallback_api_key");
         std::env::remove_var("OMNI_DATASTREAM_BASE_URL");
-        std::env::set_var(
-            "OMNI_DATASTREAM_API_BASE_URL",
-            "https://omni-api.secapi.test/",
-        );
+        std::env::set_var("OMNI_DATASTREAM_API_BASE_URL", "https://omni-api.secapi.test/");
 
         let client = SecApiClient::new(None);
 
@@ -2875,9 +2522,7 @@ mod tests {
 
         client.health().await.unwrap();
 
-        let raw_request = rx
-            .recv_timeout(Duration::from_secs(2))
-            .expect("raw request");
+        let raw_request = rx.recv_timeout(Duration::from_secs(2)).expect("raw request");
         handle.join().expect("raw capture server thread");
 
         assert!(raw_request.contains("x-sdk-test: custom-client"));
@@ -2907,9 +2552,7 @@ mod tests {
 
         client.health().await.unwrap();
 
-        let raw_request = rx
-            .recv_timeout(Duration::from_secs(2))
-            .expect("raw request");
+        let raw_request = rx.recv_timeout(Duration::from_secs(2)).expect("raw request");
         handle.join().expect("raw capture server thread");
 
         assert!(raw_request.contains("authorization: Bearer bearer_explicit_token"));
@@ -2927,9 +2570,7 @@ mod tests {
         handle.join().expect("slow server thread");
 
         match error {
-            SecApiError::Request(error) => {
-                assert!(error.is_timeout(), "expected timeout, got {error}")
-            }
+            SecApiError::Request(error) => assert!(error.is_timeout(), "expected timeout, got {error}"),
             other => panic!("expected request timeout, got {other:?}"),
         }
     }
@@ -2950,10 +2591,7 @@ mod tests {
         };
         let header = HeaderValue::from_static("5");
 
-        assert_eq!(
-            retry_delay(0, config, Some(&header)),
-            Duration::from_millis(250)
-        );
+        assert_eq!(retry_delay(0, config, Some(&header)), Duration::from_millis(250));
     }
 
     #[test]
@@ -2999,10 +2637,7 @@ mod tests {
 
         let value = client.health().await.unwrap();
         let targets: Vec<String> = (0..2)
-            .map(|_| {
-                rx.recv_timeout(Duration::from_secs(2))
-                    .expect("request target")
-            })
+            .map(|_| rx.recv_timeout(Duration::from_secs(2)).expect("request target"))
             .collect();
         handle.join().expect("response sequence server thread");
 
@@ -3023,10 +2658,7 @@ mod tests {
 
         let value = client.health().await.unwrap();
         let targets: Vec<String> = (0..2)
-            .map(|_| {
-                rx.recv_timeout(Duration::from_secs(2))
-                    .expect("request target")
-            })
+            .map(|_| rx.recv_timeout(Duration::from_secs(2)).expect("request target"))
             .collect();
         handle.join().expect("dropped connection server thread");
 
@@ -3055,9 +2687,7 @@ mod tests {
             .factor_custom(&json!({"prompt": "quality minus junk"}))
             .await
             .expect_err("expected API error");
-        let target = rx
-            .recv_timeout(Duration::from_secs(2))
-            .expect("request target");
+        let target = rx.recv_timeout(Duration::from_secs(2)).expect("request target");
         handle.join().expect("response sequence server thread");
 
         assert_eq!(error.status(), Some(503));
@@ -3100,10 +2730,7 @@ mod tests {
             .await
             .unwrap();
         let requests: Vec<String> = (0..2)
-            .map(|_| {
-                rx.recv_timeout(Duration::from_secs(2))
-                    .expect("raw request")
-            })
+            .map(|_| rx.recv_timeout(Duration::from_secs(2)).expect("raw request"))
             .collect();
         handle.join().expect("response sequence server thread");
 
@@ -3135,20 +2762,14 @@ mod tests {
             .with_base_url(base_url)
             .without_retries();
 
-        let error = client
-            .latest_filing(&[])
-            .await
-            .expect_err("expected API error");
+        let error = client.latest_filing(&[]).await.expect_err("expected API error");
         handle.join().expect("response server thread");
 
         assert_eq!(error.status(), Some(400));
         assert_eq!(error.request_id(), Some("req_json_123"));
         assert_eq!(error.code(), Some("invalid_request"));
         assert_eq!(error.message(), Some("ticker is required"));
-        assert_eq!(
-            error.body().and_then(|body| body.get("code")),
-            Some(&json!("invalid_request"))
-        );
+        assert_eq!(error.body().and_then(|body| body.get("code")), Some(&json!("invalid_request")));
         assert!(error.to_string().contains("request_id=req_json_123"));
     }
 
@@ -3165,20 +2786,14 @@ mod tests {
             .with_base_url(base_url)
             .without_retries();
 
-        let error = client
-            .latest_filing(&[])
-            .await
-            .expect_err("expected API error");
+        let error = client.latest_filing(&[]).await.expect_err("expected API error");
         handle.join().expect("response server thread");
 
         assert_eq!(error.status(), Some(400));
         assert_eq!(error.request_id(), Some("req_header_123"));
         assert_eq!(error.code(), Some("invalid_request"));
         assert_eq!(error.message(), Some("ticker is required"));
-        assert_eq!(
-            error.body().and_then(|body| body.get("requestId")),
-            Some(&json!("req_header_123"))
-        );
+        assert_eq!(error.body().and_then(|body| body.get("requestId")), Some(&json!("req_header_123")));
         assert!(error.to_string().contains("request_id=req_header_123"));
     }
 
@@ -3200,10 +2815,7 @@ mod tests {
 
         assert_eq!(error.status(), Some(502));
         assert_eq!(error.request_id(), Some("req_plain_123"));
-        assert_eq!(
-            error.body().and_then(|body| body.get("body")),
-            Some(&json!("upstream unavailable"))
-        );
+        assert_eq!(error.body().and_then(|body| body.get("body")), Some(&json!("upstream unavailable")));
         assert!(error.to_string().contains("request_id=req_plain_123"));
     }
 
@@ -3220,10 +2832,7 @@ mod tests {
             .with_base_url(base_url)
             .without_retries();
 
-        let error = client
-            .factor_custom(&json!({"prompt": "quality minus junk"}))
-            .await
-            .expect_err("expected API error");
+        let error = client.factor_custom(&json!({"prompt": "quality minus junk"})).await.expect_err("expected API error");
         handle.join().expect("response sequence server thread");
 
         assert_eq!(error.status(), Some(503));
@@ -3243,10 +2852,7 @@ mod tests {
             .with_base_url(base_url)
             .without_retries();
 
-        let error = client
-            .delete_api_key("key_missing")
-            .await
-            .expect_err("expected API error");
+        let error = client.delete_api_key("key_missing").await.expect_err("expected API error");
         handle.join().expect("response sequence server thread");
 
         assert_eq!(error.status(), Some(404));
@@ -3256,8 +2862,7 @@ mod tests {
 
     #[tokio::test]
     async fn api_error_keeps_public_variant_match_backward_compatible() {
-        let body =
-            r#"{"errorCode":"rate_limited","detail":"retry later","request_id":"req_body_456"}"#;
+        let body = r#"{"errorCode":"rate_limited","detail":"retry later","request_id":"req_body_456"}"#;
         let response = format!(
             "HTTP/1.1 429 Too Many Requests\r\ncontent-type: application/json\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{}",
             body.len(),
@@ -3326,10 +2931,7 @@ mod tests {
         handle.join().expect("response server thread");
 
         assert_eq!(error.status(), Some(502));
-        assert_eq!(
-            error.body(),
-            Some(&Value::String("upstream unavailable".to_string()))
-        );
+        assert_eq!(error.body(), Some(&Value::String("upstream unavailable".to_string())));
         assert_eq!(error.request_id(), None);
         assert_eq!(error.message(), None);
     }
@@ -3339,14 +2941,8 @@ mod tests {
         let (base_url, rx, handle) = capture_server(3);
         let client = SecApiClient::new(None).with_base_url(base_url);
 
-        client
-            .latest_section("item/1a risk", &[("ticker", "AAPL")])
-            .await
-            .unwrap();
-        client
-            .filing_by_accession("0000320193/25 000079", &[("view", "agent")])
-            .await
-            .unwrap();
+        client.latest_section("item/1a risk", &[("ticker", "AAPL")]).await.unwrap();
+        client.filing_by_accession("0000320193/25 000079", &[("view", "agent")]).await.unwrap();
         client
             .filing_section_by_accession(
                 "0000320193/25 000079",
@@ -3357,21 +2953,12 @@ mod tests {
             .unwrap();
 
         let targets: Vec<String> = (0..3)
-            .map(|_| {
-                rx.recv_timeout(Duration::from_secs(2))
-                    .expect("request target")
-            })
+            .map(|_| rx.recv_timeout(Duration::from_secs(2)).expect("request target"))
             .collect();
         handle.join().expect("capture server thread");
 
-        assert_eq!(
-            targets[0],
-            "/v1/filings/latest/sections/item%2F1a%20risk?ticker=AAPL"
-        );
-        assert_eq!(
-            targets[1],
-            "/v1/filings/0000320193%2F25%20000079?view=agent"
-        );
+        assert_eq!(targets[0], "/v1/filings/latest/sections/item%2F1a%20risk?ticker=AAPL");
+        assert_eq!(targets[1], "/v1/filings/0000320193%2F25%20000079?view=agent");
         assert_eq!(
             targets[2],
             "/v1/filings/0000320193%2F25%20000079/sections/item%2F7%20md%26a?mode=compact"
@@ -3379,113 +2966,270 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn embed_situation_helpers_route_to_public_surface() {
-        let (base_url, rx, handle) = capture_server(4);
+    async fn public_earnings_helpers_route_to_public_paths() {
+        let (base_url, rx, handle) = capture_server(2);
         let client = SecApiClient::new(None).with_base_url(base_url);
 
         client
-            .embed_situations(&[("limit", "20"), ("tickers", "AAPL")])
+            .intelligence_earnings_preview(&[("ticker", "AAPL"), ("view", "compact")])
             .await
             .unwrap();
         client
-            .embed_situation("sit/with spaces", &[])
-            .await
-            .unwrap();
-        client
-            .embed_situation_issues(&[("limit", "12")])
-            .await
-            .unwrap();
-        client
-            .embed_situation_issue("special/situations digest 22")
+            .earnings_transcripts(&[("ticker", "AAPL"), ("limit", "3")])
             .await
             .unwrap();
 
-        let targets: Vec<String> = (0..4)
-            .map(|_| {
-                rx.recv_timeout(Duration::from_secs(2))
-                    .expect("request target")
-            })
+        let targets: Vec<String> = (0..2)
+            .map(|_| rx.recv_timeout(Duration::from_secs(2)).expect("request target"))
+            .collect();
+        handle.join().expect("capture server thread");
+
+        assert_eq!(targets[0], "/v1/intelligence/earnings-preview?ticker=AAPL&view=compact");
+        assert_eq!(targets[1], "/v1/earnings/transcripts?ticker=AAPL&limit=3");
+    }
+
+    #[tokio::test]
+    async fn embed_situation_helpers_route_to_public_surface() {
+        let (base_url, rx, handle) = capture_server(8);
+        let client = SecApiClient::new(None).with_base_url(base_url);
+
+        client.embed_situations(&[("limit", "20"), ("tickers", "AAPL")]).await.unwrap();
+        client.embed_situations_feed(&[("limit", "5"), ("types", "merger")]).await.unwrap();
+        client.embed_situations_feed_rss(&[("types", "merger")]).await.unwrap();
+        client.embed_situations_stats(&[]).await.unwrap();
+        client.embed_situation("sit/with spaces", &[]).await.unwrap();
+        client.embed_situation_export("sit/with spaces", &[]).await.unwrap();
+        client.embed_situation_issues(&[("limit", "12")]).await.unwrap();
+        client.embed_situation_issue("special/situations digest 22").await.unwrap();
+
+        let targets: Vec<String> = (0..8)
+            .map(|_| rx.recv_timeout(Duration::from_secs(2)).expect("request target"))
             .collect();
         handle.join().expect("capture server thread");
 
         assert_eq!(targets[0], "/v1/embed/situations?limit=20&tickers=AAPL");
-        assert_eq!(targets[1], "/v1/embed/situations/sit%2Fwith%20spaces");
-        assert_eq!(targets[2], "/v1/embed/situations/issues?limit=12");
+        assert_eq!(targets[1], "/v1/embed/situations/feed?limit=5&types=merger");
+        assert_eq!(targets[2], "/v1/embed/situations/feed.rss?types=merger");
+        assert_eq!(targets[3], "/v1/embed/situations/stats");
+        assert_eq!(targets[4], "/v1/embed/situations/sit%2Fwith%20spaces");
+        assert_eq!(targets[5], "/v1/embed/situations/sit%2Fwith%20spaces/export");
+        assert_eq!(targets[6], "/v1/embed/situations/issues?limit=12");
         assert_eq!(
-            targets[3],
+            targets[7],
             "/v1/embed/situations/issues/special%2Fsituations%20digest%2022"
         );
     }
 
     #[tokio::test]
     async fn paid_situation_helpers_route_to_authenticated_surface() {
-        let (base_url, rx, handle) = capture_server(9);
+        let (base_url, rx, handle) = capture_server(12);
         let client = SecApiClient::new(None).with_base_url(base_url);
 
-        client
-            .list_situations(&[("types", "merger,tender_offer"), ("limit", "20")])
-            .await
-            .unwrap();
-        client
-            .get_situation("sit/with spaces", &[("enrich", "false")])
-            .await
-            .unwrap();
-        client
-            .situations_feed(&[("tickers", "AAPL,MSFT")])
-            .await
-            .unwrap();
+        client.list_situations(&[("types", "merger,tender_offer"), ("limit", "20")]).await.unwrap();
+        client.get_situation("sit/with spaces", &[("enrich", "false")]).await.unwrap();
+        client.situations_by_form("SC 13D", &[("tickers", "AAPL,MSFT")]).await.unwrap();
+        client.situations_feed(&[("tickers", "AAPL,MSFT")]).await.unwrap();
         client.situations_issues(&[("limit", "12")]).await.unwrap();
-        client
-            .situation_issue("special/situations digest 22", &[])
-            .await
-            .unwrap();
-        client
-            .situations_calendar(&[("statuses", "pending")])
-            .await
-            .unwrap();
+        client.situation_issue("special/situations digest 22", &[]).await.unwrap();
+        client.situations_calendar(&[("statuses", "pending")]).await.unwrap();
         client.situations_stats(&[("window", "30d")]).await.unwrap();
-        client
-            .export_situation("sit/with spaces", &[])
-            .await
-            .unwrap();
-        client
-            .underwrite_situation("sit/with spaces", &[])
-            .await
-            .unwrap();
+        client.situation_filings("sit/with spaces", &[("limit", "10")]).await.unwrap();
+        client.situation_summary("sit/with spaces", &[]).await.unwrap();
+        client.export_situation("sit/with spaces", &[]).await.unwrap();
+        client.underwrite_situation("sit/with spaces", &[]).await.unwrap();
 
-        let targets: Vec<String> = (0..9)
-            .map(|_| {
-                rx.recv_timeout(Duration::from_secs(2))
-                    .expect("request target")
-            })
+        let targets: Vec<String> = (0..12)
+            .map(|_| rx.recv_timeout(Duration::from_secs(2)).expect("request target"))
             .collect();
         handle.join().expect("capture server thread");
 
-        assert_eq!(
-            targets[0],
-            "/v1/situations?types=merger%2Ctender_offer&limit=20"
-        );
-        assert_eq!(
-            targets[1],
-            "/v1/situations/sit%2Fwith%20spaces?enrich=false"
-        );
-        assert_eq!(targets[2], "/v1/situations/feed?tickers=AAPL%2CMSFT");
-        assert_eq!(targets[3], "/v1/situations/issues?limit=12");
-        assert_eq!(
-            targets[4],
-            "/v1/situations/issues/special%2Fsituations%20digest%2022"
-        );
-        assert_eq!(targets[5], "/v1/situations/calendar?statuses=pending");
-        assert_eq!(targets[6], "/v1/situations/stats?window=30d");
-        assert_eq!(targets[7], "/v1/situations/sit%2Fwith%20spaces/export");
-        assert_eq!(
-            targets[8],
-            "/v1/situations/sit%2Fwith%20spaces/underwriting-pack"
-        );
+        assert_eq!(targets[0], "/v1/situations?types=merger%2Ctender_offer&limit=20");
+        assert_eq!(targets[1], "/v1/situations/sit%2Fwith%20spaces?enrich=false");
+        assert_eq!(targets[2], "/v1/situations/by-form/SC%2013D?tickers=AAPL%2CMSFT");
+        assert_eq!(targets[3], "/v1/situations/feed?tickers=AAPL%2CMSFT");
+        assert_eq!(targets[4], "/v1/situations/issues?limit=12");
+        assert_eq!(targets[5], "/v1/situations/issues/special%2Fsituations%20digest%2022");
+        assert_eq!(targets[6], "/v1/situations/calendar?statuses=pending");
+        assert_eq!(targets[7], "/v1/situations/stats?window=30d");
+        assert_eq!(targets[8], "/v1/situations/sit%2Fwith%20spaces/filings?limit=10");
+        assert_eq!(targets[9], "/v1/situations/sit%2Fwith%20spaces/summary");
+        assert_eq!(targets[10], "/v1/situations/sit%2Fwith%20spaces/export");
+        assert_eq!(targets[11], "/v1/situations/sit%2Fwith%20spaces/underwriting-pack");
     }
 
     #[tokio::test]
-    async fn watch_situations_uses_monitor_substrate() {
+    async fn typed_situation_request_builders_route_to_authenticated_surface() {
+        let (base_url, rx, handle) = capture_server(7);
+        let client = SecApiClient::new(None).with_base_url(base_url);
+
+        let list = SituationListRequest::new()
+            .types("merger,tender_offer")
+            .tickers("AAPL,MSFT")
+            .forms("SC 13D")
+            .enrich("false")
+            .limit("20")
+            .extra("response_mode", "compact");
+        let feed = SituationFeedRequest::new()
+            .types("merger")
+            .tickers("AAPL")
+            .country("US")
+            .since("2026-07-01T00:00:00Z")
+            .limit("5");
+        let rss = SituationFeedRssRequest::new()
+            .types("merger")
+            .categories("merger_acquisition")
+            .tickers("AAPL")
+            .country("US")
+            .since("2026-07-01T00:00:00Z");
+        let member = SituationMemberRequest::new().enrich("false").limit("10");
+
+        client.situations().list_with(&list).await.unwrap();
+        client.situations().get_with("sit/with spaces", &member).await.unwrap();
+        client.situations().by_form_with("SC 13D", &list).await.unwrap();
+        client.situations().feed_with(&feed).await.unwrap();
+        client.situations().feed_rss_with(&rss).await.unwrap();
+        client.situations().issues_with(&SituationIssueListRequest::new().limit("12")).await.unwrap();
+        client.situations().filings_with("sit/with spaces", &member).await.unwrap();
+
+        let targets: Vec<String> = (0..7)
+            .map(|_| rx.recv_timeout(Duration::from_secs(2)).expect("request target"))
+            .collect();
+        handle.join().expect("capture server thread");
+
+        assert_eq!(targets[0], "/v1/situations?types=merger%2Ctender_offer&tickers=AAPL%2CMSFT&forms=SC+13D&enrich=false&limit=20&response_mode=compact");
+        assert_eq!(targets[1], "/v1/situations/sit%2Fwith%20spaces?enrich=false&limit=10");
+        assert_eq!(targets[2], "/v1/situations/by-form/SC%2013D?types=merger%2Ctender_offer&tickers=AAPL%2CMSFT&forms=SC+13D&enrich=false&limit=20&response_mode=compact");
+        assert_eq!(targets[3], "/v1/situations/feed?types=merger&tickers=AAPL&country=US&since=2026-07-01T00%3A00%3A00Z&limit=5");
+        assert_eq!(targets[4], "/v1/situations/feed.rss?types=merger&categories=merger_acquisition&tickers=AAPL&country=US&since=2026-07-01T00%3A00%3A00Z");
+        assert_eq!(targets[5], "/v1/situations/issues?limit=12");
+        assert_eq!(targets[6], "/v1/situations/sit%2Fwith%20spaces/filings?enrich=false&limit=10");
+    }
+
+    #[tokio::test]
+    async fn watch_situations_uses_watchlist_alias_surface() {
+        let response = concat!(
+            "HTTP/1.1 200 OK\r\n",
+            "content-type: application/json\r\n",
+            "content-length: 11\r\n",
+            "connection: close\r\n",
+            "\r\n",
+            "{\"ok\":true}"
+        );
+        let (base_url, rx, handle) = raw_capture_server(response);
+        let client = SecApiClient::new(None)
+            .without_api_key()
+            .with_bearer_token("human_bearer")
+            .with_base_url(base_url);
+
+        client
+            .situations()
+            .watch(
+                &json!({"types": ["merger"], "tickers": [" AAPL "]}),
+                SituationWatchDelivery::Email(" desk@example.com ".to_string()),
+                Some(" Deals "),
+                Some("2026-07-13T00:00:00Z"),
+            )
+            .await
+            .unwrap();
+
+        let raw_request = rx.recv_timeout(Duration::from_secs(2)).expect("raw request");
+        handle.join().expect("raw capture server thread");
+
+        assert!(raw_request.starts_with("POST /v1/situations/watchlists HTTP/1.1"));
+        assert!(raw_request.contains(r#""query":"situations.watch""#));
+        assert!(raw_request.contains(r#""searchMode":"situation""#));
+        assert!(raw_request.contains(r#""name":"Deals""#));
+        assert!(raw_request.contains(r#""delivery":{"config":{"to":"desk@example.com"},"type":"email"}"#));
+        assert!(raw_request.contains(r#""filters":{"tickers":["AAPL"],"types":["merger"]}"#));
+    }
+
+    #[tokio::test]
+    async fn watch_situations_rejects_delivery_without_bearer_only_auth() {
+        let (base_url, _rx, handle) = capture_server(0);
+        let mixed_auth = SecApiClient::new(Some("test_api_key".to_string()))
+            .with_bearer_token("human_bearer")
+            .with_base_url(base_url.clone());
+
+        let mixed_error = mixed_auth
+            .situations()
+            .watch(
+                &json!({"types": ["merger"]}),
+                SituationWatchDelivery::Email("desk@example.com".to_string()),
+                None,
+                None,
+            )
+            .await
+            .expect_err("expected mixed auth delivery error");
+        assert!(mixed_error.to_string().contains("bearer-authenticated client without an API key"));
+
+        let missing_bearer = SecApiClient::new(None).without_api_key().with_base_url(base_url);
+        let missing_error = missing_bearer
+            .situations()
+            .watch(
+                &json!({"types": ["merger"]}),
+                SituationWatchDelivery::Email("desk@example.com".to_string()),
+                None,
+                None,
+            )
+            .await
+            .expect_err("expected missing bearer delivery error");
+        assert!(missing_error.to_string().contains("bearer-authenticated client without an API key"));
+
+        handle.join().expect("zero-request server thread");
+    }
+
+    #[tokio::test]
+    async fn watch_situations_supports_filter_only_api_key_safe_create() {
+        let response = concat!(
+            "HTTP/1.1 200 OK\r\n",
+            "content-type: application/json\r\n",
+            "content-length: 11\r\n",
+            "connection: close\r\n",
+            "\r\n",
+            "{\"ok\":true}"
+        );
+        let (base_url, rx, handle) = raw_capture_server(response);
+        let client = SecApiClient::new(None).with_base_url(base_url);
+
+        client
+            .watch_situations(
+                &json!({"types": ["merger"], "tickers": [" AAPL "]}),
+                None::<SituationWatchDelivery>,
+                Some(" Deals "),
+                None,
+            )
+            .await
+            .unwrap();
+
+        let raw_request = rx.recv_timeout(Duration::from_secs(2)).expect("raw request");
+        handle.join().expect("raw capture server thread");
+
+        assert!(raw_request.starts_with("POST /v1/situations/watchlists HTTP/1.1"));
+        assert!(raw_request.contains(r#""query":"situations.watch""#));
+        assert!(raw_request.contains(r#""searchMode":"situation""#));
+        assert!(raw_request.contains(r#""name":"Deals""#));
+        assert!(raw_request.contains(r#""filters":{"tickers":["AAPL"],"types":["merger"]}"#));
+        assert!(!raw_request.contains(r#""delivery""#));
+        assert!(!raw_request.contains(r#""webhookUrl""#));
+    }
+
+    #[tokio::test]
+    async fn situation_watchlists_use_alias_surface() {
+        let (base_url, get_rx, get_handle) = capture_server(3);
+        let client = SecApiClient::new(None).with_base_url(base_url);
+
+        client.situations().watchlists(&[("limit", "10"), ("cursor", "20")]).await.unwrap();
+        client.situations().watchlist("mon/with spaces").await.unwrap();
+        client.situations().delete_watchlist("mon/with spaces").await.unwrap();
+
+        let get_targets: Vec<String> = (0..3)
+            .map(|_| get_rx.recv_timeout(Duration::from_secs(2)).expect("request target"))
+            .collect();
+        get_handle.join().expect("capture server thread");
+        assert_eq!(get_targets[0], "/v1/situations/watchlists?limit=10&cursor=20");
+        assert_eq!(get_targets[1], "/v1/situations/watchlists/mon%2Fwith%20spaces");
+        assert_eq!(get_targets[2], "/v1/situations/watchlists/mon%2Fwith%20spaces");
+
         let response = concat!(
             "HTTP/1.1 200 OK\r\n",
             "content-type: application/json\r\n",
@@ -3499,89 +3243,61 @@ mod tests {
 
         client
             .situations()
-            .watch(
+            .create_watchlist(
                 &json!({"types": ["merger"], "tickers": [" AAPL "]}),
-                SituationWatchDelivery::Email(" desk@example.com ".to_string()),
+                None,
                 Some(" Deals "),
                 Some("2026-07-13T00:00:00Z"),
             )
             .await
             .unwrap();
 
-        let raw_request = rx
-            .recv_timeout(Duration::from_secs(2))
-            .expect("raw request");
+        let raw_request = rx.recv_timeout(Duration::from_secs(2)).expect("raw request");
         handle.join().expect("raw capture server thread");
 
-        assert!(raw_request.starts_with("POST /v1/monitors HTTP/1.1"));
+        assert!(raw_request.starts_with("POST /v1/situations/watchlists HTTP/1.1"));
         assert!(raw_request.contains(r#""query":"situations.watch""#));
         assert!(raw_request.contains(r#""searchMode":"situation""#));
         assert!(raw_request.contains(r#""name":"Deals""#));
-        assert!(raw_request
-            .contains(r#""delivery":{"config":{"to":"desk@example.com"},"type":"email"}"#));
         assert!(raw_request.contains(r#""filters":{"tickers":["AAPL"],"types":["merger"]}"#));
+        assert!(!raw_request.contains(r#""delivery""#));
+        assert!(!raw_request.contains(r#""webhookUrl""#));
     }
 
     #[tokio::test]
     async fn watch_situations_validates_filters_and_delivery() {
         let (base_url, _rx, handle) = capture_server(0);
-        let client = SecApiClient::new(None).with_base_url(base_url);
+        let client = SecApiClient::new(None)
+            .without_api_key()
+            .with_bearer_token("human_bearer")
+            .with_base_url(base_url);
 
         let missing_filters = client
-            .watch_situations(
-                &json!({}),
-                SituationWatchDelivery::OrganizationWebhook,
-                None,
-                None,
-            )
+            .watch_situations(&json!({}), SituationWatchDelivery::OrganizationWebhook, None, None)
             .await
             .expect_err("expected missing filter error");
         assert!(missing_filters.to_string().contains("at least one"));
 
         let invalid_type = client
-            .watch_situations(
-                &json!({"types": ["not-a-type"]}),
-                SituationWatchDelivery::OrganizationWebhook,
-                None,
-                None,
-            )
+            .watch_situations(&json!({"types": ["not-a-type"]}), SituationWatchDelivery::OrganizationWebhook, None, None)
             .await
             .expect_err("expected invalid type error");
-        assert!(invalid_type
-            .to_string()
-            .contains("canonical situation types"));
+        assert!(invalid_type.to_string().contains("canonical situation types"));
 
         let invalid_subtype = client
-            .watch_situations(
-                &json!({"subtypes": ["not-a-subtype"]}),
-                SituationWatchDelivery::OrganizationWebhook,
-                None,
-                None,
-            )
+            .watch_situations(&json!({"subtypes": ["not-a-subtype"]}), SituationWatchDelivery::OrganizationWebhook, None, None)
             .await
             .expect_err("expected invalid subtype error");
-        assert!(invalid_subtype
-            .to_string()
-            .contains("canonical situation subtypes"));
+        assert!(invalid_subtype.to_string().contains("canonical situation subtypes"));
 
         let invalid_situation_id = client
-            .watch_situations(
-                &json!({"situationIds": ["not-a-situation-id"]}),
-                SituationWatchDelivery::OrganizationWebhook,
-                None,
-                None,
-            )
+            .watch_situations(&json!({"situationIds": ["not-a-situation-id"]}), SituationWatchDelivery::OrganizationWebhook, None, None)
             .await
             .expect_err("expected invalid situation id error");
         assert!(invalid_situation_id.to_string().contains("canonical ids"));
 
         let invalid_delivery = client
-            .watch_situations(
-                &json!({"types": ["merger"]}),
-                SituationWatchDelivery::Email(" ".to_string()),
-                None,
-                None,
-            )
+            .watch_situations(&json!({"types": ["merger"]}), SituationWatchDelivery::Email(" ".to_string()), None, None)
             .await
             .expect_err("expected invalid delivery error");
         assert!(invalid_delivery.to_string().contains("non-empty email"));
@@ -3600,10 +3316,7 @@ mod tests {
         let params = request.params();
         let pairs = params.as_pairs();
 
-        assert_eq!(
-            pairs,
-            vec![("ticker", "AAPL"), ("form", "10-K"), ("view", "compact")]
-        );
+        assert_eq!(pairs, vec![("ticker", "AAPL"), ("form", "10-K"), ("view", "compact")]);
         assert!(!params.is_empty());
     }
 
@@ -3640,10 +3353,7 @@ mod tests {
         client.semantic_search_with(&semantic).await.unwrap();
 
         let targets: Vec<String> = (0..4)
-            .map(|_| {
-                rx.recv_timeout(Duration::from_secs(2))
-                    .expect("request target")
-            })
+            .map(|_| rx.recv_timeout(Duration::from_secs(2)).expect("request target"))
             .collect();
         handle.join().expect("capture server thread");
 
@@ -3662,26 +3372,18 @@ mod tests {
         );
     }
 
+
     #[tokio::test]
     async fn grouped_services_delegate_to_flat_client_methods() {
         let (base_url, rx, handle) = capture_server(6);
         let client = SecApiClient::new(None).with_base_url(base_url);
 
-        client
-            .entities()
-            .resolve(&[("ticker", "AAPL")])
-            .await
-            .unwrap();
-        let latest_filing = client
-            .filings()
-            .latest(&[("ticker", "AAPL"), ("form", "10-K")]);
+        client.entities().resolve(&[("ticker", "AAPL")]).await.unwrap();
+        let latest_filing = client.filings().latest(&[("ticker", "AAPL"), ("form", "10-K")]);
         latest_filing.await.unwrap();
         client
             .sections()
-            .latest(
-                "item_1a",
-                &[("ticker", "AAPL"), ("form", "10-K"), ("mode", "compact")],
-            )
+            .latest("item_1a", &[("ticker", "AAPL"), ("form", "10-K"), ("mode", "compact")])
             .await
             .unwrap();
         client
@@ -3696,14 +3398,7 @@ mod tests {
             .unwrap();
         client
             .factors()
-            .history(
-                "VALUE",
-                &[
-                    ("range", "1y"),
-                    ("response_mode", "compact"),
-                    ("include", "trust,series"),
-                ],
-            )
+            .history("VALUE", &[("range", "1y"), ("response_mode", "compact"), ("include", "trust,series")])
             .await
             .unwrap();
         client
@@ -3718,10 +3413,7 @@ mod tests {
             .unwrap();
 
         let targets: Vec<String> = (0..6)
-            .map(|_| {
-                rx.recv_timeout(Duration::from_secs(2))
-                    .expect("request target")
-            })
+            .map(|_| rx.recv_timeout(Duration::from_secs(2)).expect("request target"))
             .collect();
         handle.join().expect("capture server thread");
 
@@ -3747,27 +3439,19 @@ mod tests {
 
     #[tokio::test]
     async fn paginate_filings_follows_next_cursor() {
-        let first = json_response(
-            r#"{"object":"list","data":[{"accessionNumber":"0001"},{"accessionNumber":"0002"}],"nextCursor":"cur_2"}"#,
-        );
-        let second = json_response(
-            r#"{"object":"list","data":[{"accessionNumber":"0003"}],"nextCursor":null}"#,
-        );
+        let first = json_response(r#"{"object":"list","data":[{"accessionNumber":"0001"},{"accessionNumber":"0002"}],"nextCursor":"cur_2"}"#);
+        let second = json_response(r#"{"object":"list","data":[{"accessionNumber":"0003"}],"nextCursor":null}"#);
         let (base_url, rx, handle) = response_sequence_server(vec![first, second]);
         let client = SecApiClient::new(None).with_base_url(base_url);
 
-        let mut iterator =
-            client.paginate_filings(&[("ticker", "AAPL"), ("form", "10-K"), ("limit", "2")]);
+        let mut iterator = client.paginate_filings(&[("ticker", "AAPL"), ("form", "10-K"), ("limit", "2")]);
         let mut accessions = Vec::new();
         while let Some(item) = iterator.next().await.unwrap() {
             accessions.push(item["accessionNumber"].as_str().unwrap().to_string());
         }
 
         let targets: Vec<String> = (0..2)
-            .map(|_| {
-                rx.recv_timeout(Duration::from_secs(2))
-                    .expect("request target")
-            })
+            .map(|_| rx.recv_timeout(Duration::from_secs(2)).expect("request target"))
             .collect();
         handle.join().expect("response sequence server thread");
 
@@ -3785,20 +3469,15 @@ mod tests {
 
     #[tokio::test]
     async fn paginate_sections_stops_when_has_more_is_false() {
-        let response = json_response(
-            r#"{"object":"list","hasMore":false,"nextCursor":"ignored","data":[{"key":"item_1a"}]}"#,
-        );
+        let response = json_response(r#"{"object":"list","hasMore":false,"nextCursor":"ignored","data":[{"key":"item_1a"}]}"#);
         let (base_url, rx, handle) = response_sequence_server(vec![response]);
         let client = SecApiClient::new(None).with_base_url(base_url);
 
-        let mut iterator =
-            client.paginate_sections(&[("ticker", "AAPL"), ("q", "risk"), ("limit", "1")]);
+        let mut iterator = client.paginate_sections(&[("ticker", "AAPL"), ("q", "risk"), ("limit", "1")]);
         let first = iterator.next().await.unwrap().expect("first item");
         let second = iterator.next().await.unwrap();
 
-        let target = rx
-            .recv_timeout(Duration::from_secs(2))
-            .expect("request target");
+        let target = rx.recv_timeout(Duration::from_secs(2)).expect("request target");
         handle.join().expect("response sequence server thread");
 
         assert_eq!(first["key"], "item_1a");
@@ -3808,20 +3487,15 @@ mod tests {
 
     #[tokio::test]
     async fn paginate_sections_stops_when_has_more_snake_case_is_false() {
-        let response = json_response(
-            r#"{"object":"list","has_more":false,"next_cursor":"ignored","data":[{"key":"item_1a"}]}"#,
-        );
+        let response = json_response(r#"{"object":"list","has_more":false,"next_cursor":"ignored","data":[{"key":"item_1a"}]}"#);
         let (base_url, rx, handle) = response_sequence_server(vec![response]);
         let client = SecApiClient::new(None).with_base_url(base_url);
 
-        let mut iterator =
-            client.paginate_sections(&[("ticker", "AAPL"), ("q", "risk"), ("limit", "1")]);
+        let mut iterator = client.paginate_sections(&[("ticker", "AAPL"), ("q", "risk"), ("limit", "1")]);
         let first = iterator.next().await.unwrap().expect("first item");
         let second = iterator.next().await.unwrap();
 
-        let target = rx
-            .recv_timeout(Duration::from_secs(2))
-            .expect("request target");
+        let target = rx.recv_timeout(Duration::from_secs(2)).expect("request target");
         handle.join().expect("response sequence server thread");
 
         assert_eq!(first["key"], "item_1a");
@@ -3838,9 +3512,7 @@ mod tests {
         let mut iterator = client.paginate_filings(&[("ticker", "AAPL"), ("limit", "1")]);
         let first = iterator.next().await.unwrap();
 
-        let target = rx
-            .recv_timeout(Duration::from_secs(2))
-            .expect("request target");
+        let target = rx.recv_timeout(Duration::from_secs(2)).expect("request target");
         handle.join().expect("response sequence server thread");
 
         assert!(first.is_none());
@@ -3851,9 +3523,7 @@ mod tests {
 
     #[tokio::test]
     async fn pagination_options_cap_items_within_a_page() {
-        let response = json_response(
-            r#"{"object":"list","data":[{"id":"filing_1"},{"id":"filing_2"}],"nextCursor":"cur_2"}"#,
-        );
+        let response = json_response(r#"{"object":"list","data":[{"id":"filing_1"},{"id":"filing_2"}],"nextCursor":"cur_2"}"#);
         let (base_url, rx, handle) = response_sequence_server(vec![response]);
         let client = SecApiClient::new(None).with_base_url(base_url);
 
@@ -3864,9 +3534,7 @@ mod tests {
         let first = iterator.next().await.unwrap().expect("first item");
         let second = iterator.next().await.unwrap();
 
-        let target = rx
-            .recv_timeout(Duration::from_secs(2))
-            .expect("request target");
+        let target = rx.recv_timeout(Duration::from_secs(2)).expect("request target");
         handle.join().expect("response sequence server thread");
 
         assert_eq!(first["id"], "filing_1");
@@ -3877,8 +3545,7 @@ mod tests {
 
     #[tokio::test]
     async fn pagination_options_cap_pages_without_extra_fetch() {
-        let response =
-            json_response(r#"{"object":"list","data":[{"id":"entity_1"}],"nextCursor":"cur_2"}"#);
+        let response = json_response(r#"{"object":"list","data":[{"id":"entity_1"}],"nextCursor":"cur_2"}"#);
         let (base_url, rx, handle) = response_sequence_server(vec![response]);
         let client = SecApiClient::new(None).with_base_url(base_url);
 
@@ -3889,9 +3556,7 @@ mod tests {
         let first = iterator.next().await.unwrap().expect("first item");
         let second = iterator.next().await.unwrap();
 
-        let target = rx
-            .recv_timeout(Duration::from_secs(2))
-            .expect("request target");
+        let target = rx.recv_timeout(Duration::from_secs(2)).expect("request target");
         handle.join().expect("response sequence server thread");
 
         assert_eq!(first["id"], "entity_1");
@@ -3907,17 +3572,11 @@ mod tests {
         let (base_url, rx, handle) = response_sequence_server(vec![response]);
         let client = SecApiClient::new(None).with_base_url(base_url);
 
-        let mut iterator = client.paginate(
-            "v1/entities",
-            &[("q", "apple")],
-            PaginationOptions::default(),
-        );
+        let mut iterator = client.paginate("v1/entities", &[("q", "apple")], PaginationOptions::default());
         let first = iterator.next().await.unwrap().expect("first item");
         let second = iterator.next().await.unwrap();
 
-        let target = rx
-            .recv_timeout(Duration::from_secs(2))
-            .expect("request target");
+        let target = rx.recv_timeout(Duration::from_secs(2)).expect("request target");
         handle.join().expect("response sequence server thread");
 
         assert_eq!(first["id"], "entity_1");
@@ -3927,22 +3586,15 @@ mod tests {
 
     #[tokio::test]
     async fn repeated_cursor_yields_current_items_before_error() {
-        let response = json_response(
-            r#"{"object":"list","data":[{"id":"filing_1"}],"nextCursor":"cur_repeat"}"#,
-        );
+        let response = json_response(r#"{"object":"list","data":[{"id":"filing_1"}],"nextCursor":"cur_repeat"}"#);
         let (base_url, rx, handle) = response_sequence_server(vec![response]);
         let client = SecApiClient::new(None).with_base_url(base_url);
 
         let mut iterator = client.paginate_filings(&[("cursor", "cur_repeat"), ("limit", "1")]);
         let first = iterator.next().await.unwrap().expect("first item");
-        let error = iterator
-            .next()
-            .await
-            .expect_err("expected repeated cursor error");
+        let error = iterator.next().await.expect_err("expected repeated cursor error");
 
-        let target = rx
-            .recv_timeout(Duration::from_secs(2))
-            .expect("request target");
+        let target = rx.recv_timeout(Duration::from_secs(2)).expect("request target");
         handle.join().expect("response sequence server thread");
 
         assert_eq!(first["id"], "filing_1");
@@ -3961,14 +3613,9 @@ mod tests {
         let (base_url, rx, handle) = capture_server(1);
         let client = SecApiClient::new(None).with_base_url(base_url);
 
-        client
-            .stock_loadings("BRK/B class", &[("view", "agent")])
-            .await
-            .unwrap();
+        client.stock_loadings("BRK/B class", &[("view", "agent")]).await.unwrap();
 
-        let target = rx
-            .recv_timeout(Duration::from_secs(2))
-            .expect("request target");
+        let target = rx.recv_timeout(Duration::from_secs(2)).expect("request target");
         handle.join().expect("capture server thread");
 
         assert_eq!(target, "/v1/stocks/BRK%2FB%20class/loadings?view=agent");
@@ -3984,9 +3631,7 @@ mod tests {
             .await
             .unwrap();
 
-        let target = rx
-            .recv_timeout(Duration::from_secs(2))
-            .expect("request target");
+        let target = rx.recv_timeout(Duration::from_secs(2)).expect("request target");
         handle.join().expect("capture server thread");
 
         assert_eq!(
@@ -4002,9 +3647,7 @@ mod tests {
 
         client.delete_api_key("key/team alpha").await.unwrap();
 
-        let target = rx
-            .recv_timeout(Duration::from_secs(2))
-            .expect("request target");
+        let target = rx.recv_timeout(Duration::from_secs(2)).expect("request target");
         handle.join().expect("capture server thread");
 
         assert_eq!(target, "/v1/api_keys/key%2Fteam%20alpha");
@@ -4020,9 +3663,7 @@ mod tests {
             .await
             .unwrap();
 
-        let target = rx
-            .recv_timeout(Duration::from_secs(2))
-            .expect("request target");
+        let target = rx.recv_timeout(Duration::from_secs(2)).expect("request target");
         handle.join().expect("capture server thread");
 
         assert_eq!(
