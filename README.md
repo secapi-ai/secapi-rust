@@ -1,6 +1,6 @@
 # SEC API Rust SDK
 
-An asynchronous Rust client for retrieving SEC filings and issuer data from [SEC API](https://secapi.ai).
+SEC API provides programmatic access to SEC filings and issuer data. `sec-api-sdk-rust` is its asynchronous Rust client.
 
 Use it when a Rust service needs to resolve an issuer, retrieve a filing, or search SEC records without writing the HTTP plumbing itself. The SDK sends requests to `https://api.secapi.ai` by default and returns SEC API JSON as `serde_json::Value`, so response fields remain visible.
 
@@ -74,6 +74,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 - Read the [Rust SDK guide](https://docs.secapi.ai/rust-sdk) for request builders, retries, pagination, and configuration.
 - Use the [API reference](https://docs.secapi.ai/api-reference) for endpoint parameters and response fields.
 - Review [pricing](https://secapi.ai/pricing) before expanding a production workload.
+- Check [service status](https://status.secapi.ai) when diagnosing availability.
 - Report SDK defects in [GitHub Issues](https://github.com/secapi-ai/secapi-rust/issues) or get help through [SEC API support](https://secapi.ai/support).
 
 ## License
