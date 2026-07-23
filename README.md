@@ -1,6 +1,6 @@
 # SEC API Rust SDK
 
-`sec-api-sdk-rust` is an async Rust client for SEC API filings, statements, ownership data, factor data, and filing sections.
+`sec-api-sdk-rust` is the async Rust SDK for SEC API. Use it to retrieve filings, filing sections, statements, ownership data, and factor data in services and research workflows.
 
 [Documentation](https://docs.secapi.ai) · [Pricing](https://secapi.ai/pricing) · [Get an API key](https://secapi.ai/signup) · [Support](https://github.com/secapi-ai/secapi-rust) · [Status](https://status.secapi.ai)
 
@@ -8,7 +8,7 @@
 
 ```toml
 [dependencies]
-sec-api-sdk-rust = "1.0.3"
+sec-api-sdk-rust = "2.0.0"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -32,7 +32,7 @@ async fn main() {
 }
 ```
 
-Run with `cargo run`. It prints the latest matching filing's accession number and SEC source URL; both can change after a new filing.
+Run with `cargo run`. It prints the latest matching filing's accession number and SEC source URL. Keep both with downstream analysis: the answer is current when requested and can change after a new filing arrives.
 
 ## Common requests
 
